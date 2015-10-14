@@ -130,9 +130,9 @@ Field3D* Field3D::clone() const {
 
 /// Make sure data is allocated and unique to this object
 /// NOTE: Logically constant, but internals mutable
-void Field3D::allocate() const {
-  allocData();
-}
+//void Field3D::allocate() const {
+//  allocData();
+//}
 
 /// getData returns a pointer to the underlying data,
 /// and should be used as little as possible.
@@ -465,9 +465,11 @@ BoutReal Field3D::operator=(const BoutReal val) {
   name = "<r3D>";
 #endif
 
+  int max=mesh->ngx*mesh->ngy*mesh->ngz;
+  BoutReal * data=block->data[0][0];
 #pragma omp parallel for
-  for(int j=0;j<mesh->ngx*mesh->ngy*mesh->ngz;j++)
-    block->data[0][0][j] = val;
+  for(int j=0;j<max;j++)
+    data[j] = val;
 
   // Only 3D fields have locations
   //location = CELL_CENTRE;
@@ -2241,8 +2243,9 @@ bool Field3D::checkData(bool vital) const
     for(jx=mesh->xstart;jx<=mesh->xend;jx++)
       for(jy=mesh->ystart;jy<=mesh->yend;jy++)
 	for(jz=0;jz<mesh->ngz-1;jz++)
-	  if(!finite(block->data[jx][jy][jz]))
+	  if(!finite(block->data[jx][jy][jz])){
 	    throw BoutException("Field3D: Operation on non-finite data at [%d][%d][%d]\n", jx, jy, jz);
+	  }
   }
 
   return false;
