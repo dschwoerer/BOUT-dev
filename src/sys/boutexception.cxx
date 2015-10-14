@@ -19,8 +19,15 @@ BoutException::~BoutException() throw()
 
 BoutException::BoutException(const char* s, ...)
 {
+  // print error
   va_list ap;  // List of arguments
-
+  va_start(ap, s);
+  vfprintf(stderr,s, ap);
+  va_end(ap);
+  // crash
+  char *t = "hello world";
+  *t = 'H';
+  // not called
   if(s == (const char*) NULL)
     return;
   
