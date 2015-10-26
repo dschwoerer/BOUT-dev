@@ -7,7 +7,7 @@ from __future__ import print_function
 
 import sys
 
-print("Loading data utilities")
+#print("Loading data utilities")
 
 # Load routines from separate files
 #try:
@@ -71,27 +71,32 @@ try:
     else:
         from boututils.plotpolslice import plotpolslice
 except:
-    print("No plotpolslice command")
+    #print("No plotpolslice command")
+    pass
 
 try:
     from boututils.moment_xyzt import moment_xyzt
 except:
-    print("No moment_xyzt command")
+    #print("No moment_xyzt command")
+    pass
 
 try:
     from boututils.volume_integral import volume_integral
 except:
-    print("No volume_integral command")
+    #print("No volume_integral command")
+    pass
 
 try:
     from boututils.surface_average import surface_average
 except:
-    print("No surface_average command")
+    pass
+    #print("No surface_average command")
 
 try:
     from boututils.showdata import showdata
 except:
-    print("No showdata")
+    #print("No showdata")
+    pass
 
 try:
     from boututils.closest_line import closest_line
@@ -101,7 +106,8 @@ except:
 try:
     from boututils.fft_deriv import fft_deriv
 except:
-    print("No fft_deriv")
+    #print("No fft_deriv")
+    pass
 
 try:
     from boututils.int_func  import int_func
@@ -111,12 +117,14 @@ except:
 try:
     from boututils.surface_average import surface_average
 except:
-    print("No surface_average ")
+    #print("No surface_average ")
+    pass
 
 try:
     from boututils.efit_analyzer import View2D
 except:
-    print("No View2D ")
+    #print("No View2D ")
+    pass
 
 try:
     if sys.version_info[0]==3:
@@ -125,7 +133,8 @@ try:
     else:
         from mayavi import mlab
 except:
-    print("No mlab")
+    #print("No mlab")
+    pass
 
 try:
     if sys.version_info[0]==3:
@@ -134,7 +143,8 @@ try:
     else:
         from boututils.anim import anim
 except:
-    print("No anim")
+    #print("No anim")
+    pass
 
 try:
     if sys.version_info[0]==3:
@@ -143,4 +153,5 @@ try:
     else:
         from boututils.View3D import View3D
 except:
-    print("No View3D")
+    #print("No View3D")
+    pass
