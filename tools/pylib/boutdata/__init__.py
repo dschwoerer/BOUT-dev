@@ -6,7 +6,7 @@ from __future__ import print_function
 #
 ##################################################
 
-print("Loading BOUT++ data routines")
+#print("Loading BOUT++ data routines")
 
 # Load routines from separate files
 from boutdata.collect import collect
