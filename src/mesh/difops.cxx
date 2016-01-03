@@ -753,11 +753,13 @@ const Field3D Laplace(const Field3D &f) {
 #ifdef CHECK
 	int msg_pos = msg_stack.push("Laplace( Field3D )");
 #endif
-
+#ifdef SLABGEOMETRY
+	Field3D result  = mesh->g11*D2DX2(f) + mesh->g22*D2DY2(f) + mesh->g33*D2DZ2(f);
+#else
 	Field3D result  = mesh->G1*DDX(f) + mesh->G2*DDY(f) + mesh->G3*DDZ(f)
 		+ mesh->g11*D2DX2(f) + mesh->g22*D2DY2(f) + mesh->g33*D2DZ2(f)
 			+ 2.0*(mesh->g12*D2DXDY(f) + mesh->g13*D2DXDZ(f) + mesh->g23*D2DYDZ(f));
-
+#endif
 #ifdef CHECK
 	msg_stack.pop(msg_pos);
 #endif
