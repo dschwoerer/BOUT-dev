@@ -1229,18 +1229,42 @@ const Field3D applyXdiff(const Field3D &var, deriv_func func, inner_boundary_der
   }
 #else
   stencil s;
-  do {
-    for(bx.jz=0;bx.jz<mesh->ngz-1;bx.jz++) {
-      vs.setXStencil(s, bx, loc);
-      r[bx.jx][bx.jy][bx.jz] = func(s) / dd(bx.jx, bx.jy);
+  if (func == D2DX2_C2 && !(mesh->StaggerGrids && (loc != CELL_DEFAULT) && (loc != vs.getLocation()))){
+    //output.write("Using optimized D2DX2 derivative\n");
+    int xmax=mesh->ngx-1;
+    int yzmax=mesh->ngy*mesh->ngz;
+    BoutReal * res = r[0][0];
+    BoutReal * inp = vs[0][0];
+    int count=yzmax;
+    int ymax=mesh->ngy;
+    int zmax=mesh->ngz;
+    for (int x=1;x<xmax-1;x++){
+      //for (int y=0;y<ymax;++y){
+      //for (int z=0;z<zmax;++z){
+      //  result(x,y,z)=vs(x+1,y,z)+vs(x-1,y,z)-2*vs(x,y,z);
+      //}
+      //}
+      for (int yz=0;yz<yzmax;yz++){
+      	res[count]=(-2*inp[count]+inp[count-yzmax]+inp[count+yzmax]);
+	count++;
+      }
     }
-  }while(next_index2(&bx));
+    result/=dd;
+  } else {
+    do {
+      for(bx.jz=0;bx.jz<mesh->ngz-1;bx.jz++) {
+	vs.setXStencil(s, bx, loc);
+	r[bx.jx][bx.jy][bx.jz] = func(s) / dd(bx.jx, bx.jy);
+      }
+    }while(next_index2(&bx));
+  }
 #endif  
 
 #ifdef CHECK
   // Mark boundaries as invalid
   result.bndry_xin = result.bndry_xout = result.bndry_yup = result.bndry_ydown = false;
 #endif
+
   
   if (mesh->freeboundary_ydown) {
     for (RangeIterator it=mesh->iterateBndryLowerY(); !it.isDone(); it++)
@@ -2064,8 +2088,7 @@ const Field3D D2DX2(const Field3D &f, CELL_LOC outloc, DIFF_METHOD method) {
     }else {
       // A more complicated shift. Get a result at cell centre, then shift.
       if(inloc == CELL_XLOW) {
-	// Shifting
-	
+	// Shifting	
 	func = sfD2DX2; // Set default
 	func_in = sfD2DX2_in;
 	func_out = sfD2DX2_out;
