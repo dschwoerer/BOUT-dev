@@ -1868,7 +1868,7 @@ void Field3D::shiftZ(int jx, int jy, double zangle)
 
   // Apply phase shift
   for(jz=1;jz<=ncz/2;jz++) {
-    kwave=jz*2.0*PI/mesh->zlength; // wave number is 1/[rad]
+    kwave=jz*2.0*PI/mesh->zlength(); // wave number is 1/[rad]
     v[jz] *= dcomplex(cos(kwave*zangle) , -sin(kwave*zangle));
   }
 
@@ -2548,7 +2548,7 @@ void Field3D::setBoundaryTo(const Field3D &f3d) {
 #ifdef CHECK
   msg_stack.push("Field3D::setBoundary(const Field3D&)");
   
-  if(f3d.block == NULL)
+  if(!f3d.isAllocated())
     throw BoutException("Setting boundary condition to empty data\n");
 #endif
 
@@ -2559,9 +2559,13 @@ void Field3D::setBoundaryTo(const Field3D &f3d) {
   for(vector<BoundaryRegion*>::iterator it = reg.begin(); it != reg.end(); it++) {
     BoundaryRegion* bndry= *it;
     /// Loop within each region
-    for(bndry->first(); !bndry->isDone(); bndry->next())
-      for(int z=0;z<mesh->ngz;z++)
-        block->data[bndry->x][bndry->y][z] = f3d.block->data[bndry->x][bndry->y][z];
+    for(bndry->first(); !bndry->isDone(); bndry->next1d())
+      for(int z=0;z<mesh->ngz;z++) {
+        // Get value half-way between cells
+        BoutReal val = 0.5*(f3d(bndry->x,bndry->y,z) + f3d(bndry->x-bndry->bx, bndry->y-bndry->by, z));
+        // Set to this value
+        (*this)(bndry->x,bndry->y,z) = 2.*val - (*this)(bndry->x-bndry->bx, bndry->y-bndry->by, z);
+      }
   }
 #ifdef CHECK
   msg_stack.pop();
