@@ -49,6 +49,12 @@ struct memblock3d {
   memblock3d *all_next;
 }; 
 
+// enums of boundary for compare of fieleds
+enum boundaries_t {
+  BNDRY_NONE=0,
+  BNDRY_X=1,
+  BNDRY_Y=2,
+  BNDRY_Z=4 };
 
 /// Class for 3D X-Y-Z scalar fields
 /*!
@@ -261,6 +267,11 @@ class Field3D : public Field, public FieldData {
   void applyBoundary(const string &region, const string &condition);
   void applyTDerivBoundary();
   void setBoundaryTo(const Field3D &f3d); ///< Copy the boundary region
+
+  // compare of the difference of rhs and this is smaller than the absolute difference aprec
+  // by setting the last argument to e.g. BNDRY_X|BNDRY_Y to ignore X and Y boundary.
+  // if assert is set, an exception is thrown with more informations.
+  bool isEqual(const Field3D &rhs, BoutReal aprec=1e-6, int ignore_bndry=0,bool assert=false);
   
  private:
   /// Boundary - add a 2D field

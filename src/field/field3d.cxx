@@ -57,7 +57,7 @@ Field3D::Field3D(const Field3D& f) : background(NULL), deriv(NULL), yup_field(0)
 #ifdef MEMDEBUG
   output.write("Field3D %u: Copy constructor from %u\n", (unsigned int) this, (unsigned int) &f);
 #endif
-  * this=f;  
+  * this=f;
 }
 
 Field3D::Field3D(const Field2D& f) : background(NULL), block(NULL), deriv(NULL), yup_field(0), ydown_field(0) {
@@ -3220,3 +3220,33 @@ const Field3D floor(const Field3D &var, BoutReal f) {
   return result;
 }
 
+
+bool Field3D::isEqual(const Field3D &rhs, BoutReal aprec, int ignore_bndry, bool assert){
+  int xstart=0,xstop=mesh->ngx;
+  if (ignore_bndry&BNDRY_X){
+    xstart=2;
+    xstop-=2;
+  }
+  int ystart=0,ystop=mesh->ngy;
+  if (ignore_bndry&BNDRY_Y){
+    ystart=2;
+    ystop-=2;
+  }
+  int zstart=0,zstop=mesh->ngz;
+  if (ignore_bndry&BNDRY_Z){
+    throw BoutException("Not implemented\n");
+  }
+  for (int x=xstart;x<xstop;++x){
+    for (int y=ystart;y<ystop;++y){
+      for (int z=zstart;z<zstop;++z){
+	if (fabs((*this)[x][y][z] - rhs[x][y][z]) > aprec){
+	  if (assert){
+	    throw BoutException("field %p and %p are not equal in elemement [%d, %d, %d]\n",&rhs,this,x,y,z);
+	  }
+	  return false;
+	}
+      }
+    }
+  }
+  return true;
+}
