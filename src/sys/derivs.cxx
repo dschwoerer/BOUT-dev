@@ -1198,34 +1198,63 @@ const Field3D applyXdiff(const Field3D &var, deriv_func func, inner_boundary_der
   }
 #else
   stencil s;
+  bool computed=false;
+  // specific fast implementation
   if (func == D2DX2_C2 && !(mesh->StaggerGrids && (loc != CELL_DEFAULT) && (loc != vs.getLocation()))){
-    //output.write("Using optimized D2DX2 derivative\n");
-    int xmax=mesh->ngx-1;
+    output.write("Using optimised code :p\n");
     int yzmax=mesh->ngy*mesh->ngz;
+    int istart=2*yzmax;
+    int iend=(mesh->ngx-2)*yzmax;
     BoutReal * res = r[0][0];
     BoutReal * inp = vs[0][0];
-    int count=yzmax;
-    int ymax=mesh->ngy;
-    int zmax=mesh->ngz;
-    for (int x=1;x<xmax-1;x++){
-      //for (int y=0;y<ymax;++y){
-      //for (int z=0;z<zmax;++z){
-      //  result(x,y,z)=vs(x+1,y,z)+vs(x-1,y,z)-2*vs(x,y,z);
-      //}
-      //}
-      for (int yz=0;yz<yzmax;yz++){
-      	res[count]=(-2*inp[count]+inp[count-yzmax]+inp[count+yzmax]);
-	count++;
+    // int ymax=mesh->ngy;
+    // int zmax=mesh->ngz;
+    // printf("Mesh: %d, %d %d\n",mesh->ngx,mesh->ngy,mesh->ngz);
+    //for (int x=2;x<xmax-2;x++){
+    //  for (int yz=0;yz<yzmax;yz++){
+    if (func == D2DX2_C2){
+      for (int i=istart;i<iend;++i){
+	res[i]=(-2*inp[i]+inp[i-yzmax]+inp[i+yzmax]);
       }
     }
+    //else if (func == D2DX2_C4){
+    // for (int i=istart;i<iend;++i){
+    // 	res[i]=(-2*inp[i]+inp[i-yzmax]+inp[i+yzmax]);
+    // }
+    //}
+    else{
+      throw BoutException("Missing implementation!\n");
+    }
     result/=dd;
-  } else {
+    computed=true;
+  }
+#ifdef CHECK
+  static int check = -1;
+  if (computed){
+    if ( check == -1){
+      OPTION(Options::getRoot()->getSection("derivative"),check, 0);
+    }
+  }
+  if (!computed || check){
+    Field3D fast;
+    if (computed && check){
+      fast = result;
+      fast.allocate();
+    }
+#else
+  if (!computed){
+#endif
     do {
       for(bx.jz=0;bx.jz<mesh->ngz-1;bx.jz++) {
 	vs.setXStencil(s, bx, loc);
 	r[bx.jx][bx.jy][bx.jz] = func(s) / dd(bx.jx, bx.jy);
       }
     }while(next_index2(&bx));
+#ifdef CHECK
+    if (computed && check){
+      fast.isEqual(result,1e-6,BNDRY_X|BNDRY_Y,true);
+    }
+#endif
   }
 #endif  
 
@@ -1460,14 +1489,64 @@ const Field3D applyYdiff(const Field3D &var, deriv_func func, inner_boundary_der
 #else 
   */
   stencil s;
-  do {
-    //output.write("apply %d %d\n", bx.jx, bx.jy);
-    for(bx.jz=0;bx.jz<mesh->ngz-1;bx.jz++) {
-      var.setYStencil(s, bx, loc);
-      r[bx.jx][bx.jy][bx.jz] = func(s) / dd(bx.jx, bx.jy);
+  bool computed=false;
+  // specific fast implementation
+  if (func == D2DX2_C2 && !(mesh->StaggerGrids && (loc != CELL_DEFAULT) && (loc != var.getLocation()))){
+    output.write("Using optimised code!!!\n");
+    int zmax=mesh->ngz;
+    int istart=2*mesh->ngz;;
+    int iend=(mesh->ngx*mesh->ngy*mesh->ngz)-2*mesh->ngz;
+    BoutReal * res = r[0][0];
+    BoutReal * inp = var[0][0];
+    // int ymax=mesh->ngy;
+    // int zmax=mesh->ngz;
+    // printf("Mesh: %d, %d %d\n",mesh->ngx,mesh->ngy,mesh->ngz);
+    //for (int x=2;x<xmax-2;x++){
+    //  for (int yz=0;yz<yzmax;yz++){
+    if (func == D2DX2_C2){
+      for (int i=istart;i<iend;++i){
+	res[i]=(-2*inp[i]+inp[i-zmax]+inp[i+zmax]);
+      }
     }
-  }while(next_index2(&bx));
-  //#endif
+    //else if (func == D2DX2_C4){
+    // for (int i=istart;i<iend;++i){
+    // 	res[i]=(-2*inp[i]+inp[i-yzmax]+inp[i+yzmax]);
+    // }
+    //}
+    else{
+      throw BoutException("Missing implementation!\n");
+    }
+    result/=dd;
+    computed=true;
+  }
+#ifdef CHECK
+  static int check = -1;
+  if (computed){
+    if ( check == -1){
+      OPTION(Options::getRoot()->getSection("derivative"),check, 0);
+    }
+  }
+  if (!computed || check){
+    Field3D fast;
+    if (computed && check){
+      fast = result;
+      fast.allocate();
+    }
+#else
+  if (!computed){
+#endif
+    do {
+      for(bx.jz=0;bx.jz<mesh->ngz-1;bx.jz++) {
+	var.setYStencil(s, bx, loc);
+	r[bx.jx][bx.jy][bx.jz] = func(s) / dd(bx.jx, bx.jy);
+      }
+    }while(next_index2(&bx));
+#ifdef CHECK
+    if (computed && check){
+      fast.isEqual(result,1e-6,BNDRY_X|BNDRY_Y,true);
+    }
+#endif
+  }
 
 #ifdef CHECK
   // Mark boundaries as invalid
@@ -1569,11 +1648,62 @@ const Field3D applyZdiff(const Field3D &var, deriv_func func, BoutReal dd, CELL_
   bindex bx;
 
   start_index(&bx, RGN_NOZ);
-  stencil s;
-  do {
-    var.setZStencil(s, bx, loc);
-    r[bx.jx][bx.jy][bx.jz] = func(s) / dd;
-  }while(next_index3(&bx));
+  stencil s;  bool computed=false;
+  // specific fast implementation
+  //output.write("%p != %p",func,D2DX2_C2);
+  if (func == D2DX2_C2 && !(mesh->StaggerGrids && (loc != CELL_DEFAULT) && (loc != var.getLocation()))){
+    output.write("Using optimised code\n");
+    int istart=2;
+    int iend=(mesh->ngx*mesh->ngy*mesh->ngz)-2;
+    BoutReal * res = r[0][0];
+    BoutReal * inp = var[0][0];
+    // int ymax=mesh->ngy;
+    // int zmax=mesh->ngz;
+    // printf("Mesh: %d, %d %d\n",mesh->ngx,mesh->ngy,mesh->ngz);
+    //for (int x=2;x<xmax-2;x++){
+    //  for (int yz=0;yz<yzmax;yz++){
+    if (func == D2DX2_C2){
+      for (int i=istart;i<iend;++i){
+	res[i]=(-2*inp[i]+inp[i-1]+inp[i+1]);
+      }
+    }
+    //else if (func == D2DX2_C4){
+    // for (int i=istart;i<iend;++i){
+    // 	res[i]=(-2*inp[i]+inp[i-yzmax]+inp[i+yzmax]);
+    // }
+    //}
+    else{
+      throw BoutException("Missing implementation!\n");
+    }
+    result/=dd;
+    computed=true;
+  }
+#ifdef CHECK
+  static int check = -1;
+  if (computed){
+    if ( check == -1){
+      OPTION(Options::getRoot()->getSection("derivative"),check, 0);
+    }
+  }
+  if (!computed || check){
+    Field3D fast;
+    if (computed && check){
+      fast = result;
+      fast.allocate();
+    }
+#else
+  if (!computed){
+#endif
+    do {
+	var.setZStencil(s, bx, loc);
+	r[bx.jx][bx.jy][bx.jz] = func(s) / dd;
+    }while(next_index3(&bx));
+#ifdef CHECK
+    if (computed && check){
+      fast.isEqual(result,1e-6,BNDRY_X|BNDRY_Y,true);
+    }
+#endif
+  }
 #endif
 
   if (mesh->freeboundary_xin && mesh->firstX() && !mesh->periodicX) {
