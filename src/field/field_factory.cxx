@@ -72,6 +72,7 @@ FieldFactory::FieldFactory(Mesh *m, Options *opt) : fieldmesh(m), options(opt) {
   addGenerator("sqrt", new FieldSqrt(NULL));
   addGenerator("h", new FieldHeaviside(NULL));
   addGenerator("erf", new FieldErf(NULL));
+  addGenerator("rand", new FieldRand(NULL));
 
   addGenerator("min", new FieldMin());
   addGenerator("max", new FieldMax());
