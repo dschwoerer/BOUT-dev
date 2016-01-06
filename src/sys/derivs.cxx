@@ -1203,8 +1203,8 @@ const Field3D applyXdiff(const Field3D &var, deriv_func func, inner_boundary_der
   if (func == D2DX2_C2 && !(mesh->StaggerGrids && (loc != CELL_DEFAULT) && (loc != vs.getLocation()))){
     output.write("Using optimised code :p\n");
     int yzmax=mesh->ngy*mesh->ngz;
-    int istart=2*yzmax;
-    int iend=(mesh->ngx-2)*yzmax;
+    int istart=mesh->xstart*yzmax;
+    int iend=(mesh->xend)*yzmax;
     BoutReal * res = r[0][0];
     BoutReal * inp = vs[0][0];
     // int ymax=mesh->ngy;
@@ -1494,8 +1494,8 @@ const Field3D applyYdiff(const Field3D &var, deriv_func func, inner_boundary_der
   if (func == D2DX2_C2 && !(mesh->StaggerGrids && (loc != CELL_DEFAULT) && (loc != var.getLocation()))){
     output.write("Using optimised code!!!\n");
     int zmax=mesh->ngz;
-    int istart=2*mesh->ngz;;
-    int iend=(mesh->ngx*mesh->ngy*mesh->ngz)-2*mesh->ngz;
+    int istart=mesh->ystart*mesh->ngz;
+    int iend=(mesh->ngx*mesh->ngy*mesh->ngz)-(mesh->ngy-mesh->yend)*mesh->ngz;
     BoutReal * res = r[0][0];
     BoutReal * inp = var[0][0];
     // int ymax=mesh->ngy;
@@ -1653,8 +1653,8 @@ const Field3D applyZdiff(const Field3D &var, deriv_func func, BoutReal dd, CELL_
   //output.write("%p != %p",func,D2DX2_C2);
   if (func == D2DX2_C2 && !(mesh->StaggerGrids && (loc != CELL_DEFAULT) && (loc != var.getLocation()))){
     output.write("Using optimised code\n");
-    int istart=2;
-    int iend=(mesh->ngx*mesh->ngy*mesh->ngz)-2;
+    const int istart=0;
+    const int iend=(mesh->ngx*mesh->ngy*mesh->ngz);
     BoutReal * res = r[0][0];
     BoutReal * inp = var[0][0];
     // int ymax=mesh->ngy;
@@ -1662,9 +1662,12 @@ const Field3D applyZdiff(const Field3D &var, deriv_func func, BoutReal dd, CELL_
     // printf("Mesh: %d, %d %d\n",mesh->ngx,mesh->ngy,mesh->ngz);
     //for (int x=2;x<xmax-2;x++){
     //  for (int yz=0;yz<yzmax;yz++){
+    const int nz=mesh->ngz-1;
     if (func == D2DX2_C2){
-      for (int i=istart;i<iend;++i){
-	res[i]=(-2*inp[i]+inp[i-1]+inp[i+1]);
+      for (int i=istart;i<iend;i+=mesh->ngz){
+	for (int z=0;z<nz;z++){
+	  res[i+z]=(-2*inp[i+z]+inp[i+((z+nz-1)%nz)]+inp[i+((z+1)%nz)]);
+	}
       }
     }
     //else if (func == D2DX2_C4){
@@ -1700,7 +1703,7 @@ const Field3D applyZdiff(const Field3D &var, deriv_func func, BoutReal dd, CELL_
     }while(next_index3(&bx));
 #ifdef CHECK
     if (computed && check){
-      fast.isEqual(result,1e-6,BNDRY_X|BNDRY_Y,true);
+      fast.isEqual(result,1e-6,BNDRY_X|BNDRY_Y|BNDRY_Z,true);
     }
 #endif
   }

@@ -3241,17 +3241,17 @@ const Field3D floor(const Field3D &var, BoutReal f) {
 bool Field3D::isEqual(const Field3D &rhs, BoutReal aprec, int ignore_bndry, bool assert){
   int xstart=0,xstop=mesh->ngx;
   if (ignore_bndry&BNDRY_X){
-    xstart=2;
-    xstop-=2;
+    xstart=mesh->xstart;
+    xstop-=mesh->xend;
   }
   int ystart=0,ystop=mesh->ngy;
   if (ignore_bndry&BNDRY_Y){
-    ystart=2;
-    ystop-=2;
+    ystart=mesh->ystart;
+    ystop-=mesh->yend;
   }
   int zstart=0,zstop=mesh->ngz;
   if (ignore_bndry&BNDRY_Z){
-    throw BoutException("Not implemented\n");
+    zstop-=1;
   }
   for (int x=xstart;x<xstop;++x){
     for (int y=ystart;y<ystop;++y){
