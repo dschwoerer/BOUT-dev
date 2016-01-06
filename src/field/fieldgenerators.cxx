@@ -133,6 +133,18 @@ BoutReal FieldErf::generate(double x, double y, double z, double t) {
   return erf(gen->generate(x,y,z,t));
 }
 
+FieldGenerator* FieldRand::clone(const list<FieldGenerator*> args) {
+  if(args.size() != 0) {
+    throw ParseException("Incorrect number of arguments to rand function. Expecting 0, got %d", args.size());
+  }
+
+  return new FieldRand(args.front());
+}
+
+BoutReal FieldRand::generate(double x,double y, double z, double t) {
+  return (2.*std::rand())/RAND_MAX-1;
+}
+
 //////////////////////////////////////////////////////////
 // Ballooning transform
 // Use a truncated Ballooning transform to enforce periodicity in y and z
