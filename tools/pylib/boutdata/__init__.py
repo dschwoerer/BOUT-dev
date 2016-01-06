@@ -1,6 +1,17 @@
-""" Routines for exchanging data to/from BOUT++ """
+from __future__ import print_function
+##################################################
+#            BOUT++ data package
+#
+# Routines for exchanging data to/from BOUT++
+#
+##################################################
 
-# Import this, as this almost always used when calling this package
+#print("Loading BOUT++ data routines")
+
+# Load routines from separate files
 from boutdata.collect import collect
 
-__all__ = ["collect", "gen_surface", "pol_slice"]
+from boutdata.pol_slice import pol_slice
+
+from boutdata.gen_surface import gen_surface
+

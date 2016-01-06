@@ -80,7 +80,7 @@ class Field3D : public Field, public FieldData {
   DEPRECATED(Field3D* clone() const);
 
   /// Ensures that memory is allocated
-  void allocate() const;
+  void allocate() const {allocData();};
   /// Returns a pointer to internal data (REMOVE THIS)
   BoutReal*** getData() const;
   bool isAllocated() const { return block !=  NULL; } ///< Test if data is allocated

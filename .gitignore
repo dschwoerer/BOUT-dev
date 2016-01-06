@@ -8,6 +8,8 @@
 *.d
 *.dSYM/
 *.ext
+*.gcda
+*.gcno
 *.idx
 *.ilg
 *.ind
