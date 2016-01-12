@@ -24,6 +24,7 @@
 #include <globals.hxx>
 
 #include <cmath>
+#include <limits>
 
 #include <field3d.hxx>
 #include <utils.hxx>
@@ -2601,7 +2602,7 @@ memblock3d *Field3D::newBlock() const {
     // Set the boundary regions to non-finite numbers
     // Catches unset boundaries, skipped communications
     
-    BoutReal val = 1./0.; // Deliberately non-finite number
+    BoutReal val = std::numeric_limits<BoutReal>::quiet_NaN(); // Deliberately non-finite number
     
     // X boundaries
     for(int i=0;i<mesh->xstart;i++)
