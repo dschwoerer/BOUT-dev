@@ -3224,3 +3224,32 @@ const Field3D floor(const Field3D &var, BoutReal f) {
   return result;
 }
 
+bool Field3D::isEqual(const Field3D &rhs, BoutReal aprec, int ignore_bndry, bool assert){
+  int xstart=0,xstop=mesh->ngx;
+  if (ignore_bndry&BNDRY_X){
+    xstart=mesh->xstart;
+    xstop=mesh->xend+1;
+  }
+  int ystart=0,ystop=mesh->ngy;
+  if (ignore_bndry&BNDRY_Y){
+    ystart=mesh->ystart;
+    ystop=mesh->yend+1;
+  }
+  int zstart=0,zstop=mesh->ngz;
+  if (ignore_bndry&BNDRY_Z){
+    zstop-=1;
+  }
+  for (int x=xstart;x<xstop;++x){
+    for (int y=ystart;y<ystop;++y){
+      for (int z=zstart;z<zstop;++z){
+	if (fabs((*this)[x][y][z] - rhs[x][y][z]) > aprec){
+	  if (assert){
+	    throw BoutException("field %p and %p are not equal in elemement [%d, %d, %d]\n",&rhs,this,x,y,z);
+	  }
+	  return false;
+	}
+      }
+    }
+  }
+  return true;
+}
