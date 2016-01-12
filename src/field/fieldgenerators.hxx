@@ -192,6 +192,16 @@ private:
   FieldGenerator *gen;
 };
 
+class FieldRand : public FieldGenerator {
+public:
+  FieldRand(FieldGenerator* g) : gen(g) {}
+
+  FieldGenerator* clone(const list<FieldGenerator*> args);
+  BoutReal generate(double x, double y, double z, double t);
+private:
+  FieldGenerator *gen;
+};
+
 /// Minimum
 class FieldMin : public FieldGenerator {
 public:

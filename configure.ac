@@ -281,7 +281,7 @@ elif test $with_optimize ; then
     then
       OPT_FLAGS="-Ofast -march=native -funroll-loops"
       DISABLE_CHECK=probably
-    else
+else
       AC_MSG_ERROR([unrecognized option: --with=optimize=$optimize])
     fi
   else
@@ -1060,25 +1060,25 @@ then
 
   OLDNCDF="0" # Indicates whether nc-config or ncxx4-config
 
-    if (test "$with_netcdf" = "yes") || (test "$with_netcdf" = "")
-    then
-      NCCONF=""
-      # No path specified. Try using nc-config
-      if type ncxx4-config &> /dev/null ; then
+		if (test "$with_netcdf" = "yes") || (test "$with_netcdf" = "")
+  	then
+			NCCONF=""
+ 			# No path specified. Try using nc-config
+			if type ncxx4-config &> /dev/null ; then
         NCCONF=`which ncxx4-config` # New interface
-      elif type nc-config &> /dev/null ; then
+			elif type nc-config &> /dev/null ; then
         # Older interface. May or may not have C++ support
         echo " -> nc-config script found:" `which nc-config`
         if test `nc-config --has-c++` = "yes"
         then
           echo " -> C++ support included"
           NCCONF=`which nc-config`
-          OLDNCDF="1"
+				  OLDNCDF="1"
         else
           echo " -> NO C++ SUPPORT"
         fi
       else
-            echo " -> No configure script found. Specify using --with-netcdf option"
+        echo " -> No configure script found. Specify using --with-netcdf option"
       fi
     else
       # see if configure scripts are in path

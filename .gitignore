@@ -33,3 +33,4 @@ test*.py
 /lib/
 /manual/*.pdf
 /tools/vagrant/.vagrant
+*.gc??

@@ -2232,7 +2232,7 @@ bool Field3D::checkData(bool vital) const
 	for(jz=0;jz<mesh->ngz-1;jz++)
 	  if(!finite(block->data[jx][jy][jz])){
 	    throw BoutException("Field3D: Operation on non-finite data at [%d][%d][%d]\n", jx, jy, jz);
-	  }
+  }
   }
 
   return false;
