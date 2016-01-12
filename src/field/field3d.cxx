@@ -3225,12 +3225,12 @@ bool Field3D::isEqual(const Field3D &rhs, BoutReal aprec, int ignore_bndry, bool
   int xstart=0,xstop=mesh->ngx;
   if (ignore_bndry&BNDRY_X){
     xstart=mesh->xstart;
-    xstop-=mesh->xend;
+    xstop=mesh->xend+1;
   }
   int ystart=0,ystop=mesh->ngy;
   if (ignore_bndry&BNDRY_Y){
     ystart=mesh->ystart;
-    ystop-=mesh->yend;
+    ystop=mesh->yend+1;
   }
   int zstart=0,zstop=mesh->ngz;
   if (ignore_bndry&BNDRY_Z){
