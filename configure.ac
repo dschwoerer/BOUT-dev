@@ -115,7 +115,7 @@ AC_DEFUN([BOUT_ADDPATH_CHECK_LIB],[
 		],)
 	if test $BACL_found != yes ; then
 		for prefix in $extra_prefix /usr /opt $HOME $HOME/local /usr/local ; do
-			for path in $prefix $prefix/lib $prefix/lib64 $prefix/theLongOne ; do
+			for path in $prefix $prefix/lib $prefix/lib64 $prefix/lib/x86_64-linux-gnu ; do
 				LDFLAGS="-L$path $LDFLAGS_save"
 				BOUT_MSG_DEBUG([try link $1 with $path])
 				AC_TRY_LINK([extern "C"
@@ -296,7 +296,7 @@ else
     elif test $optimize -gt 1
     then
       OPT_FLAGS="-O2 -march=native"
-    elif test $optimze -ge 0
+    elif test $optimize -ge 0
     then
       OPT_FLAGS="-O$optimize"
     else
