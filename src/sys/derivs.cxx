@@ -1201,10 +1201,10 @@ const Field3D applyXdiff(const Field3D &var, deriv_func func, inner_boundary_der
   bool computed=false;
   // specific fast implementation
   if (func == D2DX2_C2 && !(mesh->StaggerGrids && (loc != CELL_DEFAULT) && (loc != vs.getLocation()))){
-    output.write("Using optimised code :p\n");
+    //output.write("Using optimised code (in x)\n");
     int yzmax=mesh->ngy*mesh->ngz;
     int istart=mesh->xstart*yzmax;
-    int iend=(mesh->xend)*yzmax;
+    int iend=(mesh->xend+1)*yzmax;
     BoutReal * res = r[0][0];
     BoutReal * inp = vs[0][0];
     // int ymax=mesh->ngy;
@@ -1263,7 +1263,6 @@ const Field3D applyXdiff(const Field3D &var, deriv_func func, inner_boundary_der
   result.bndry_xin = result.bndry_xout = result.bndry_yup = result.bndry_ydown = false;
 #endif
 
-  
   if (mesh->freeboundary_ydown) {
     for (RangeIterator it=mesh->iterateBndryLowerY(); !it.isDone(); it++)
       for (bx.jy=mesh->ystart-1; bx.jy>=0; bx.jy--)
@@ -1492,10 +1491,10 @@ const Field3D applyYdiff(const Field3D &var, deriv_func func, inner_boundary_der
   bool computed=false;
   // specific fast implementation
   if (func == D2DX2_C2 && !(mesh->StaggerGrids && (loc != CELL_DEFAULT) && (loc != var.getLocation()))){
-    output.write("Using optimised code!!!\n");
+    //output.write("Using optimised code (in y)\n");
     int zmax=mesh->ngz;
     int istart=mesh->ystart*mesh->ngz;
-    int iend=(mesh->ngx*mesh->ngy*mesh->ngz)-(mesh->ngy-mesh->yend)*mesh->ngz;
+    int iend=(mesh->ngx*mesh->ngy*mesh->ngz)-(mesh->ngy-mesh->yend-1)*mesh->ngz;
     BoutReal * res = r[0][0];
     BoutReal * inp = var[0][0];
     // int ymax=mesh->ngy;
@@ -1547,6 +1546,7 @@ const Field3D applyYdiff(const Field3D &var, deriv_func func, inner_boundary_der
     }
 #endif
   }
+//#endif
 
 #ifdef CHECK
   // Mark boundaries as invalid
@@ -1648,11 +1648,12 @@ const Field3D applyZdiff(const Field3D &var, deriv_func func, BoutReal dd, CELL_
   bindex bx;
 
   start_index(&bx, RGN_NOZ);
-  stencil s;  bool computed=false;
+  stencil s;
+  bool computed=false;
   // specific fast implementation
   //output.write("%p != %p",func,D2DX2_C2);
   if (func == D2DX2_C2 && !(mesh->StaggerGrids && (loc != CELL_DEFAULT) && (loc != var.getLocation()))){
-    output.write("Using optimised code\n");
+    //output.write("Using optimised code (in z)\n");
     const int istart=0;
     const int iend=(mesh->ngx*mesh->ngy*mesh->ngz);
     BoutReal * res = r[0][0];
@@ -2191,6 +2192,7 @@ const Field3D D2DX2(const Field3D &f, CELL_LOC outloc, DIFF_METHOD method) {
       // A more complicated shift. Get a result at cell centre, then shift.
       if(inloc == CELL_XLOW) {
 	// Shifting	
+	
 	func = sfD2DX2; // Set default
 	func_in = sfD2DX2_in;
 	func_out = sfD2DX2_out;
