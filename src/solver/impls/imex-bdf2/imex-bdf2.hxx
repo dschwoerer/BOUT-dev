@@ -29,6 +29,7 @@
  * along with BOUT++.  If not, see <http://www.gnu.org/licenses/>.
  *
  **************************************************************************/
+#pragma once
 
 #ifdef BOUT_HAS_PETSC
 
@@ -105,7 +106,13 @@ class IMEXBDF2 : public Solver {
 
 #else // BOUT_HAS_PETSC
 
-#include "../emptysolver.hxx"
-typedef EmptySolver IMEXBDF2;
+class EmptySolver : public Solver {
+public:
+  EmptySolver(Options *opt = NULL) {throw BoutException("Solver IMEX-BDF2 requires PETSC!\n");}
+  
+  int run() {return 0;}
+  BoutReal run(BoutReal tout, int &ncalls, BoutReal &rhstime) {return 0;}
+
+};
 
 #endif // BOUT_HAS_PETSC
