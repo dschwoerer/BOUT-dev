@@ -1,0 +1,16 @@
+[mesh]
+nx=7
+ny=2
+nz=3
+
+[derivative]
+# needs to be copiled with CHECK
+check = 1
+
+[f1]
+scale=2
+function=rand()
+
+[f2]
+scale=2
+function=rand()
