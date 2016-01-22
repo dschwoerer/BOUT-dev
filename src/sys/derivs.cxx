@@ -1490,7 +1490,8 @@ const Field3D applyYdiff(const Field3D &var, deriv_func func, inner_boundary_der
   stencil s;
   bool computed=false;
   // specific fast implementation
-  if (func == D2DX2_C2 && !(mesh->StaggerGrids && (loc != CELL_DEFAULT) && (loc != var.getLocation()))){
+  if ( ( func == D2DX2_C2  ) // || func == DDX_C2 
+       && !(mesh->StaggerGrids && (loc != CELL_DEFAULT) && (loc != var.getLocation()))){
     //output.write("Using optimised code (in y)\n");
     int zmax=mesh->ngz;
     int istart=mesh->ystart*mesh->ngz;
@@ -1507,6 +1508,11 @@ const Field3D applyYdiff(const Field3D &var, deriv_func func, inner_boundary_der
 	res[i]=(-2*inp[i]+inp[i-zmax]+inp[i+zmax]);
       }
     }
+    // else if (func == DDX_C2){
+    //   for (int i=istart;i<iend;++i){
+    // 	res[i]=0.5*(inp[i+zmax]-inp[i-zmax]);
+    //   }      
+    // }
     //else if (func == D2DX2_C4){
     // for (int i=istart;i<iend;++i){
     // 	res[i]=(-2*inp[i]+inp[i-yzmax]+inp[i+yzmax]);
@@ -1514,6 +1520,29 @@ const Field3D applyYdiff(const Field3D &var, deriv_func func, inner_boundary_der
     //}
     else{
       throw BoutException("Missing implementation!\n");
+    }
+    result/=dd;
+    computed=true;
+  } else if (func == DDX_C2){
+    //output.write("Using optimised code (in y)\n");
+    int zmax=mesh->ngz;
+    int istart=mesh->ystart*mesh->ngz;
+    int iend=(mesh->ngx*mesh->ngy*mesh->ngz)-(mesh->ngy-mesh->yend-1)*mesh->ngz;
+    BoutReal * res = r[0][0];
+    BoutReal * inp = var[0][0];
+    int diffminus=zmax;
+    int diffplus =zmax;
+    if (!(mesh->StaggerGrids && (loc != CELL_DEFAULT) && (loc != var.getLocation()))){ // default
+    } else if (loc == CELL_YLOW && var.getLocation() == CELL_CENTRE){
+      diffplus =0;
+    } else if (var.getLocation() == CELL_YLOW){
+      diffminus=0;
+    }
+    else{
+      throw BoutException("Missing implementation!\n");
+    }
+    for (int i=istart;i<iend;++i){
+      res[i]=0.5*(inp[i+diffplus]-inp[i-diffminus]);
     }
     result/=dd;
     computed=true;
@@ -1652,7 +1681,8 @@ const Field3D applyZdiff(const Field3D &var, deriv_func func, BoutReal dd, CELL_
   bool computed=false;
   // specific fast implementation
   //output.write("%p != %p",func,D2DX2_C2);
-  if (func == D2DX2_C2 && !(mesh->StaggerGrids && (loc != CELL_DEFAULT) && (loc != var.getLocation()))){
+  if ( ( func == D2DX2_C2 || func == DDX_C2)
+       && !(mesh->StaggerGrids && (loc != CELL_DEFAULT) && (loc != var.getLocation()))){
     //output.write("Using optimised code (in z)\n");
     const int istart=0;
     const int iend=(mesh->ngx*mesh->ngy*mesh->ngz);
@@ -1668,6 +1698,13 @@ const Field3D applyZdiff(const Field3D &var, deriv_func func, BoutReal dd, CELL_
       for (int i=istart;i<iend;i+=mesh->ngz){
 	for (int z=0;z<nz;z++){
 	  res[i+z]=(-2*inp[i+z]+inp[i+((z+nz-1)%nz)]+inp[i+((z+1)%nz)]);
+	}
+      }
+    }
+    else if (func == DDX_C2){
+      for (int i=istart;i<iend;i+=mesh->ngz){
+	for (int z=0;z<nz;z++){
+	  res[i+z]=0.5*(inp[i+((z+1)%nz)]-inp[i+((z+nz-1)%nz)]);
 	}
       }
     }
@@ -1698,6 +1735,7 @@ const Field3D applyZdiff(const Field3D &var, deriv_func func, BoutReal dd, CELL_
 #else
   if (!computed){
 #endif
+    output.write("Using slow derivative in z\n");
     do {
 	var.setZStencil(s, bx, loc);
 	r[bx.jx][bx.jy][bx.jz] = func(s) / dd;
