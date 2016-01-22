@@ -1,0 +1,8 @@
+#!/bin/sh
+if ./fastdiff
+then
+	echo " => No error reported"
+else
+	echo " => Test failed"
+	exit 1
+fi
