@@ -2615,7 +2615,7 @@ memblock3d *Field3D::newBlock() const {
     // Set the boundary regions to non-finite numbers
     // Catches unset boundaries, skipped communications
     
-    BoutReal val = 1./0.; // Deliberately non-finite number
+    BoutReal val = NAN; // Deliberately non-finite number
     
     // X boundaries
     for(int i=0;i<mesh->xstart;i++)
