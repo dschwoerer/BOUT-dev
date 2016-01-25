@@ -1282,6 +1282,8 @@ const Field3D applyXdiff(const Field3D &var, deriv_func func, inner_boundary_der
       }
     }while(next_index2(&bx));
 #ifdef CHECK
+    if (!computed && check&2)
+      output.write("Using slow derivative in x\n");
     if (computed && check){
       fast.isEqual(result,1e-6,BNDRY_X|BNDRY_Y,true);
     }
@@ -1554,26 +1556,30 @@ const Field3D applyYdiff(const Field3D &var, deriv_func func, inner_boundary_der
     }
     result/=dd;
     computed=true;
-  } else if (func == DDX_C2){
+  } else if (func == DDX_C2 || func == DDX_C2_stag){
     //output.write("Using optimised code (in y)\n");
     int zmax=mesh->ngz;
     int istart=mesh->ystart*mesh->ngz;
     int iend=(mesh->ngx*mesh->ngy*mesh->ngz)-(mesh->ngy-mesh->yend-1)*mesh->ngz;
     BoutReal * res = r[0][0];
     BoutReal * inp = var[0][0];
-    int diffminus=zmax;
-    int diffplus =zmax;
     if (!(mesh->StaggerGrids && (loc != CELL_DEFAULT) && (loc != var.getLocation()))){ // default
-    } else if (loc == CELL_YLOW && var.getLocation() == CELL_CENTRE){
-      diffplus =0;
-    } else if (var.getLocation() == CELL_YLOW){
-      diffminus=0;
-    }
-    else{
-      throw BoutException("Missing implementation!\n");
-    }
-    for (int i=istart;i<iend;++i){
-      res[i]=0.5*(inp[i+diffplus]-inp[i-diffminus]);
+      for (int i=istart;i<iend;++i){
+	res[i]=0.5*(inp[i+zmax]-inp[i-zmax]);
+      }
+    } else {
+      int diffminus=zmax;
+      int diffplus =zmax;
+      if (loc == CELL_YLOW){
+	diffplus =0;
+      } else if (var.getLocation() == CELL_YLOW){
+	diffminus=0;
+      } else {
+	throw BoutException("Missing implementation!\n");
+      }
+      for (int i=istart;i<iend;++i){
+	res[i]=(inp[i+diffplus]-inp[i-diffminus]);
+      }
     }
     result/=dd;
     computed=true;
@@ -1585,9 +1591,9 @@ const Field3D applyYdiff(const Field3D &var, deriv_func func, inner_boundary_der
       OPTION(Options::getRoot()->getSection("derivative"),check, 0);
     }
   }
-  if (!computed || check){
+  if (!computed || check&1){
     Field3D fast;
-    if (computed && check){
+    if (computed && check&1){
       fast = result;
       fast.allocate();
     }
@@ -1601,7 +1607,9 @@ const Field3D applyYdiff(const Field3D &var, deriv_func func, inner_boundary_der
       }
     }while(next_index2(&bx));
 #ifdef CHECK
-    if (computed && check){
+    if (!computed && check&2)
+      output.write("Using slow derivative in y\n");
+    if (computed && check&1){
       fast.isEqual(result,1e-6,BNDRY_X|BNDRY_Y,true);
     }
 #endif
@@ -1766,7 +1774,6 @@ const Field3D applyZdiff(const Field3D &var, deriv_func func, BoutReal dd, CELL_
 #else
   if (!computed){
 #endif
-    output.write("Using slow derivative in z\n");
     do {
 	var.setZStencil(s, bx, loc);
 	r[bx.jx][bx.jy][bx.jz] = func(s) / dd;
@@ -1775,6 +1782,8 @@ const Field3D applyZdiff(const Field3D &var, deriv_func func, BoutReal dd, CELL_
     if (computed && check){
       fast.isEqual(result,1e-6,BNDRY_X|BNDRY_Y|BNDRY_Z,true);
     }
+    if (!computed && check&2)
+      output.write("Using slow derivative in z\n");
 #endif
   }
 #endif
