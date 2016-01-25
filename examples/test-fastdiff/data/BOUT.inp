@@ -1,0 +1,32 @@
+StaggerGrids = true
+
+MXG = 2
+MYG = 2
+
+[mesh]
+nx=7
+ny=2
+nz=3
+ixseps1 = -1
+ixseps2 = -1
+
+
+[derivative]
+# needs to be copiled with CHECK
+check = 1
+
+[All]
+scale=2
+function=rand()
+bndry_all=dirichlet(0)
+
+[f1]
+function = rand()
+bndry_all=dirichlet(0)
+
+[f2]
+function = rand()
+bndry_all=dirichlet(0)
+
+[solver]
+mxstep = 1000
