@@ -1374,7 +1374,7 @@ const Field3D bracket(const Field3D &f, const Field3D &g, BRACKET_METHOD method,
 				result = result.shiftZ(false); // Shift back
 			break;
 		}
-		case BRACKET_ARAKAWA: {
+		case BRACKET_ARAKAWA_OLD: {
 			// Arakawa scheme for perpendicular flow
     
 			result.allocate();
@@ -1404,16 +1404,97 @@ const Field3D bracket(const Field3D &f, const Field3D &g, BRACKET_METHOD method,
 				BoutReal Jpx = 0.25*( gs[jx+1][jy][jz]*(fs[jx+1][jy][jzp]-fs[jx+1][jy][jzm]) -
 					gs[jx-1][jy][jz]*(fs[jx-1][jy][jzp]-fs[jx-1][jy][jzm]) -
 						gs[jx][jy][jzp]*(fs[jx+1][jy][jzp]-fs[jx-1][jy][jzp]) +
-							gs[jx][jy][jzm]*(fs[jx+1][jy][jzm]-fs[jx-1][jy][jzm]))
+							gs[jx][jy][jzm]*(fs[jx+1][jy][jzm]-fs[jx-1][jy][jzm]) )
 								/ (mesh->dx[jx][jy] * mesh->dz);
 				// Jx+
 				BoutReal Jxp = 0.25*( gs[jx+1][jy][jzp]*(fs[jx][jy][jzp]-fs[jx+1][jy][jz]) -
 					gs[jx-1][jy][jzm]*(fs[jx-1][jy][jz]-fs[jx][jy][jzm]) -
 						gs[jx-1][jy][jzp]*(fs[jx][jy][jzp]-fs[jx-1][jy][jz]) +
-							gs[jx+1][jy][jzm]*(fs[jx+1][jy][jz]-fs[jx][jy][jzm]))
+							gs[jx+1][jy][jzm]*(fs[jx+1][jy][jz]-fs[jx][jy][jzm]) )
 								/ (mesh->dx[jx][jy] * mesh->dz);
-          
+				//Jpx=0;
+				//Jxp=0;
 				result[jx][jy][jz] = (Jpp + Jpx + Jxp) / 3.;
+			}
+			if(mesh->ShiftXderivs && (mesh->ShiftOrder == 0))
+				result = result.shiftZ(false); // Shift back
+			break;
+		}
+		case BRACKET_ARAKAWA: {
+			// reimplementation with the focus on speed
+			Field3D fs = f;
+			Field3D gs = g;
+			if(mesh->ShiftXderivs && (mesh->ShiftOrder == 0)) {
+				fs = f.shiftZ(true);
+				gs = g.shiftZ(true);
+			}
+			int ncz = mesh->ngz - 1;
+			//#warning "TODO: Select DDX_C2 stencil"
+			Field3D fsdx=DDX(fs,CELL_DEFAULT,DIFF_C2);
+			Field3D fsdz=DDZ(fs,CELL_DEFAULT,DIFF_C2,true);
+			Field3D gsdx=DDX(gs,CELL_DEFAULT,DIFF_C2);
+			Field3D gsdz=DDZ(gs,CELL_DEFAULT,DIFF_C2,true);
+			result = fsdz*gsdx-fsdx*gsdz;
+			int dxp=mesh->ngy*mesh->ngz;
+			//for(int jx=mesh->xstart;jx<=mesh->xend;jx++){
+			//	int jxp=jx+1;
+			//	int jxm=jx-1;
+			//	for(int jy=mesh->ystart;jy<=mesh->yend;jy++){
+			//		for(int jz=0;jz<ncz;jz++) {
+			BoutReal * f  =fs[0][0];
+			BoutReal * g  =gs[0][0];
+			BoutReal * fdx=fsdx[0][0];
+			BoutReal * fdz=fsdz[0][0];
+			BoutReal * gdx=gsdx[0][0];
+			BoutReal * gdz=gsdz[0][0];
+
+			BoutReal * r  =result[0][0];
+			
+			BoutReal dzc=1./(mesh->dz*2.);
+			int imax=(mesh->xend+1)*mesh->ngy*mesh->ngz;
+			//for (int i = mesh->start*mesh->ngy*mesh->ngz){
+			for (int iy=mesh->ystart;iy <= mesh->yend;++iy){
+				for (int ix=mesh->xstart; ix <= mesh->xend;++ix){
+					BoutReal dxc=1./(mesh->dx[ix][iy]*2);
+					for (int iz=0;iz < ncz;++iz){
+						int i=ix*mesh->ngy*mesh->ngz+iy*mesh->ngz+iz;
+						int izp=i+1;
+						int izm=i-1;
+						if ( iz == 0 ) {
+							izm=i+ncz-1;
+						}
+						else if ( iz == ncz-1 ) {
+							izp=i-ncz+1;
+						}
+				
+						// Jpp is done
+						BoutReal tmpx  =
+							+ g[i+dxp] * fdz[i+dxp]
+							- g[i-dxp] * fdz[i-dxp];
+						BoutReal tmpz  =
+							+ g[izm]   * fdx[izm]
+							- g[izp]   * fdx[izp];
+
+						// BoutReal tmp2 =
+						// 	  g[izp+dxp] * ( f[izp]   - f[i+dxp] )
+						// 	- g[izm-dxp] * ( f[i-dxp] - f[izm]   )
+						// 	- g[izp-dxp] * ( f[izp]   - f[i-dxp] )
+						// 	+ g[izm+dxp] * ( f[i+dxp] - f[izm]   );
+						
+						tmpz +=
+							+ f[izp]   * gdx[izp]
+							- f[izm]   * gdx[izm];
+						tmpx +=
+							+ f[i-dxp] * gdz[i-dxp]
+							- f[i+dxp] * gdz[i+dxp];
+						
+						
+						tmpx *= dxc;
+						tmpz *= dzc;
+						r[i]+=tmpx+tmpz;
+						r[i]/=3;
+					}
+				}
 			}
 			if(mesh->ShiftXderivs && (mesh->ShiftOrder == 0))
 				result = result.shiftZ(false); // Shift back
@@ -1431,6 +1512,14 @@ const Field3D bracket(const Field3D &f, const Field3D &g, BRACKET_METHOD method,
 	}
 	
 	result.setLocation(result_loc) ;
-	
+
+// #ifdef CHECK
+// 	if (method == BRACKET_ARAKAWA){
+// 	  Field3D fast = bracket(f,g,BRACKET_ARAKAWA_FAST,outloc, solver,result);
+// 		if (fast.isEqual(result,1e-12,BNDRY_X|BNDRY_Y|BNDRY_Z,true)){
+// 			output.write("fast is equal normal\n");
+// 		}; // throw exception if they are not (sufficently) equal
+// 	}
+// #endif	
 	return result;
 }
