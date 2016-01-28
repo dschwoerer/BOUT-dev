@@ -1261,11 +1261,11 @@ const Field3D applyXdiff(const Field3D &var, deriv_func func, inner_boundary_der
   }
 #ifdef CHECK
   static int check = -1;
-  if (computed){
-    if ( check == -1){
-      OPTION(Options::getRoot()->getSection("derivative"),check, 0);
-    }
+  //if (computed){
+  if ( check == -1){
+    OPTION(Options::getRoot()->getSection("derivative"),check, 0);
   }
+  //}
   if (!computed || check){
     Field3D fast;
     if (computed && check){
@@ -1586,11 +1586,11 @@ const Field3D applyYdiff(const Field3D &var, deriv_func func, inner_boundary_der
   }
 #ifdef CHECK
   static int check = -1;
-  if (computed){
-    if ( check == -1){
-      OPTION(Options::getRoot()->getSection("derivative"),check, 0);
-    }
+  //if (computed){
+  if ( check == -1){
+    OPTION(Options::getRoot()->getSection("derivative"),check, 0);
   }
+  //}
   if (!computed || check&1){
     Field3D fast;
     if (computed && check&1){
@@ -1739,11 +1739,28 @@ const Field3D applyZdiff(const Field3D &var, deriv_func func, BoutReal dd, CELL_
 	  res[i+z]=(-2*inp[i+z]+inp[i+((z+nz-1)%nz)]+inp[i+((z+1)%nz)]);
 	}
       }
+    result/=dd;
     }
     else if (func == DDX_C2){
-      for (int i=istart;i<iend;i+=mesh->ngz){
-	for (int z=0;z<nz;z++){
-	  res[i+z]=0.5*(inp[i+((z+1)%nz)]-inp[i+((z+nz-1)%nz)]);
+      BoutReal idd = 0.5/dd;
+      if (nz > 10) {
+	// do it fast
+	for (int i=istart;i<iend;++i){
+	  res[i]=idd*(inp[i+1]-inp[i-1]);
+	}
+	// correct for periodic bc
+	int nzm=nz-1;
+	int nzmm=nz-2;
+	for (int i=istart;i<iend;i+=mesh->ngz){
+	  res[i]=0.5*(inp[i+1]-inp[i+nzm]);
+	  res[i+nz]=res[i];
+	  res[i+nzm]=idd*(inp[i+nzmm]-inp[i+1]);
+	}
+      } else {
+	for (int i=istart;i<iend;i+=mesh->ngz){
+	  for (int z=0;z<nz;z++){
+	    res[i+z]=idd*(inp[i+((z+1)%nz)]-inp[i+((z+nz-1)%nz)]);
+	  }
 	}
       }
     }
@@ -1755,16 +1772,15 @@ const Field3D applyZdiff(const Field3D &var, deriv_func func, BoutReal dd, CELL_
     else{
       throw BoutException("Missing implementation!\n");
     }
-    result/=dd;
     computed=true;
   }
 #ifdef CHECK
   static int check = -1;
-  if (computed){
-    if ( check == -1){
-      OPTION(Options::getRoot()->getSection("derivative"),check, 0);
-    }
+  //if (computed){
+  if ( check == -1){
+    OPTION(Options::getRoot()->getSection("derivative"),check, 0);
   }
+  //}
   if (!computed || check){
     Field3D fast;
     if (computed && check){
