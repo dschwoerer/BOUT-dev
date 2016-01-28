@@ -28,6 +28,7 @@
 #include <stencils.hxx>
 #include <output.hxx>
 #include <msg_stack.hxx>
+#include <boutexception.hxx>
 
 /// Perform interpolation between centre -> shifted or vice-versa
 /*!
@@ -88,11 +89,56 @@ const Field3D interp_to(const Field3D &var, CELL_LOC loc)
 	// Need to communicate in X
       }
       case CELL_YLOW: {
+	int istart = mesh->ystart*mesh->ngz;
+	int iend   = mesh->ngx*(mesh->ngy)*mesh->ngz-istart;
+	BoutReal * inp = var[0][0];
+	BoutReal * out = d[0][0];
+	int diff   = mesh->ngz;
+	int dp     = diff;
+	int dpp    = 2*diff;
+	int dm     = diff;
+	int dmm    = 2*diff;
+	if (loc == CELL_YLOW){ // shift from CENTRE to YLOW
+	  dpp = dp;
+	  dp  = 0;
+	} else {
+	  dmm = dm;
+	  dm  = 0;
+	}
+	if (mesh->ystart < 2 || mesh->yend + 2 >= mesh->ngy){ // not enough boundary cells for normal usage
+	  // avoid out of memory access
+	  istart = 2*mesh->ngz;
+	  iend   = mesh->ngx*(mesh->ngy-2)*mesh->ngz;
+	}
+	for (int i = istart;i<iend;++i){
+	  out[i]=( 9.* (inp[i-dm]+inp[i+dp]) - inp[i-dmm] - inp[i+dpp] ) / 16.;
+	}
+	if (mesh->ystart < 2 || mesh->yend + 2 >= mesh->ngy){ // correct the wrong ones
+	  for (int iy=mesh->ystart;iy<mesh->ngy;++iy){
+	    dpp /= diff; dp /= diff; dm /= diff; dmm /= diff;
+	    if (iy==2){ iy=mesh->ngy-2; }
+	    int mm=iy-dmm >= 0         ? iy-dmm : 0;
+	    int m =iy-dm  >= 0         ? iy-dm  : 0;
+	    int p =iy+dp  >= mesh->ngy ? mesh->ngy-1:iy+dp;
+	    int pp=iy+dpp >= mesh->ngy ? mesh->ngy-1:iy+dpp;
+	    for (int ix=0;ix<mesh->ngx;++ix){
+	      for (int iz=0;iz<mesh->ngz;++iz){
+		d[ix][iy][iz]=
+		  ( 9.* (var[ix][m][iz]+var[ix][p][iz]) - var[ix][mm][iz] - var[ix][pp][iz] ) / 16.;
+	      }
+	    }
+	  }
+	}
+#ifdef CHECK
 	start_index(&bx, RGN_NOY);
 	do {
 	  var.setYStencil(s, bx, loc);
-	  d[bx.jx][bx.jy][bx.jz] = interp(s);
+	  if (d[bx.jx][bx.jy][bx.jz] != interp(s)){
+	    //bout_error("Detected bug in interpolation procedure!\n");
+	    throw BoutException("Detected bug in interpolation procedure!\n");
+	  }
 	}while(next_index3(&bx));
+#endif
 	break;
 	// Need to communicate in Y
       }
