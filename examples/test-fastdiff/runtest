@@ -1,8 +1,17 @@
 #!/bin/sh
-if ./fastdiff
-then
-	echo " => No error reported"
-else
+c=1
+for option in "" "mesh:nz=20"
+do
+    if ! ./fastdiff $option > runtest.$c.log
+    then
+	cat runtest.$c.log
 	echo " => Test failed"
 	exit 1
-fi
+    else
+	tail runtest.$c.log
+    fi
+    c=$(expr $c + 1)
+done
+
+echo " => No error reported"
+exit 0
