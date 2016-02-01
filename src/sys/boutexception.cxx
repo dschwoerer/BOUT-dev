@@ -24,9 +24,8 @@ BoutException::BoutException(const char* s, ...)
   va_start(ap, s);
   vfprintf(stderr,s, ap);
   va_end(ap);
-  // crash
-  char *t = "hello world";
-  *t = 'H';
+  
+  abort(); // call sig_abrt
   // not called
   if(s == (const char*) NULL)
     return;
