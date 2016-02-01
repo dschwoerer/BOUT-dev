@@ -63,10 +63,7 @@ const Field3D interp_to(const Field3D &var, CELL_LOC loc)
 
     Field3D result;
 
-    result = var; // NOTE: This is just for boundaries. FIX!
-
-    result.allocate();
-    BoutReal ***d = result.getData();
+    BoutReal ***d =NULL;
     
     if((var.getLocation() == CELL_CENTRE) || (loc == CELL_CENTRE)) {
       // Going between centred and shifted
@@ -78,6 +75,15 @@ const Field3D interp_to(const Field3D &var, CELL_LOC loc)
       // Get the non-centre location for interpolation direction
       dir = (loc == CELL_CENTRE) ? var.getLocation() : loc;
 
+      if (dir != CELL_YLOW) {
+	result = var; // NOTE: This is just for boundaries. FIX!
+	
+	result.allocate();
+	d = result.getData();
+      } else {
+	result.allocate();
+      }
+      
       switch(dir) {
       case CELL_XLOW: {
 	start_index(&bx, RGN_NOX);
@@ -90,9 +96,9 @@ const Field3D interp_to(const Field3D &var, CELL_LOC loc)
       }
       case CELL_YLOW: {
 	int istart = mesh->ystart*mesh->ngz;
-	int iend   = mesh->ngx*(mesh->ngy)*mesh->ngz-istart;
+	int iend   = (mesh->ngx*(mesh->ngy)*mesh->ngz)-istart;
 	BoutReal * inp = var[0][0];
-	BoutReal * out = d[0][0];
+	BoutReal * out = result[0][0];
 	int diff   = mesh->ngz;
 	int dp     = diff;
 	int dpp    = 2*diff;
@@ -108,14 +114,15 @@ const Field3D interp_to(const Field3D &var, CELL_LOC loc)
 	if (mesh->ystart < 2 || mesh->yend + 2 >= mesh->ngy){ // not enough boundary cells for normal usage
 	  // avoid out of memory access
 	  istart = 2*mesh->ngz;
-	  iend   = mesh->ngx*(mesh->ngy-2)*mesh->ngz;
+	  iend   = (mesh->ngx*mesh->ngy*mesh->ngz)-istart;
 	}
-	for (int i = istart;i<iend;++i){
+	for (int i=istart;i<iend;++i){
 	  out[i]=( 9.* (inp[i-dm]+inp[i+dp]) - inp[i-dmm] - inp[i+dpp] ) / 16.;
 	}
 	if (mesh->ystart < 2 || mesh->yend + 2 >= mesh->ngy){ // correct the wrong ones
-	  for (int iy=mesh->ystart;iy<mesh->ngy;++iy){
-	    dpp /= diff; dp /= diff; dm /= diff; dmm /= diff;
+	  //{ // try to do the boundaries
+	  dpp /= diff; dp /= diff; dm /= diff; dmm /= diff;
+	  for (int iy=0;iy<mesh->ngy;++iy){
 	    if (iy==2){ iy=mesh->ngy-2; }
 	    int mm=iy-dmm >= 0         ? iy-dmm : 0;
 	    int m =iy-dm  >= 0         ? iy-dm  : 0;
@@ -123,9 +130,22 @@ const Field3D interp_to(const Field3D &var, CELL_LOC loc)
 	    int pp=iy+dpp >= mesh->ngy ? mesh->ngy-1:iy+dpp;
 	    for (int ix=0;ix<mesh->ngx;++ix){
 	      for (int iz=0;iz<mesh->ngz;++iz){
-		d[ix][iy][iz]=
+		result[ix][iy][iz]=
 		  ( 9.* (var[ix][m][iz]+var[ix][p][iz]) - var[ix][mm][iz] - var[ix][pp][iz] ) / 16.;
 	      }
+	    }
+	  }
+	}
+	for (int ix=0;ix< mesh->ngx;ix++){
+	  for (int iy=0;iy < mesh->ngy;iy++){
+	    if (iy==mesh->ystart){
+	      iy=mesh->yend+1;
+	      if (iy >= mesh->ngy){ // case MGY = 0
+		continue;
+	      }
+	    }
+	    for (int iz=0;iz<mesh->ngz;iz++){
+	      result[ix][iy][iz]=var[ix][iy][iz];
 	    }
 	  }
 	}
@@ -133,7 +153,7 @@ const Field3D interp_to(const Field3D &var, CELL_LOC loc)
 	start_index(&bx, RGN_NOY);
 	do {
 	  var.setYStencil(s, bx, loc);
-	  if (d[bx.jx][bx.jy][bx.jz] != interp(s)){
+	  if (result[bx.jx][bx.jy][bx.jz] != interp(s)){
 	    //bout_error("Detected bug in interpolation procedure!\n");
 	    throw BoutException("Detected bug in interpolation procedure!\n");
 	  }
