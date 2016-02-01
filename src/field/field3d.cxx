@@ -806,17 +806,21 @@ Field3D & Field3D::operator*=(const Field3D &rhs) {
 #ifdef TRACK
   name = "(" + name + "*" + rhs.name + ")";
 #endif
-
+  
+  BoutReal * rhsd=rhs.block->data[0][0];
+  BoutReal * lhsd=this->block->data[0][0];
   if(block->refs == 1) {
 #pragma omp parallel for
     for(int j=0;j<mesh->ngx*mesh->ngy*mesh->ngz;j++)
-      block->data[0][0][j] *= rhs.block->data[0][0][j];
+      lhsd[j] *= rhsd[j];
+      //block->data[0][0][j] *= rhs.block->data[0][0][j];
   }else {
     memblock3d *nb = newBlock();
-    
+    BoutReal * nbd = nb->data[0][0];
 #pragma omp parallel for
     for(int j=0;j<mesh->ngx*mesh->ngy*mesh->ngz;j++)
-      nb->data[0][0][j] = block->data[0][0][j] * rhs.block->data[0][0][j];
+      nbd[j] = lhsd[j] * rhsd[j];
+      //nb->data[0][0][j] = block->data[0][0][j] * rhs.block->data[0][0][j];
 
     block->refs--;
     block = nb;
