@@ -48,6 +48,7 @@ AC_ARG_WITH(cvode,  [  --with-cvode            	   Use the SUNDIALS CVODE solver
 AC_ARG_WITH(sundials, [  --with-sundials           Use CVODE and IDA])
 AC_ARG_WITH(facets, [  --with-facets           	   Build the interface to FACETS])
 AC_ARG_WITH(fftw,   [  --with-fftw             	   Set directory of FFTW3 library])
+AC_ARG_WITH(eirene, [  --with-eirene           	   Set directory of EIRENE library])
 AC_ARG_WITH(lapack, [  --with-lapack           	   Use the LAPACK library])
 AC_ARG_WITH(petsc,  [  --with-petsc            	   Enable PETSc interface])
 AC_ARG_WITH(slepc,  [  --with-slepc                Enable SLEPc interface])
@@ -1344,6 +1345,51 @@ AC_FUNC_VPRINTF
 #EXTRA_LIBS="$EXTRA_LIBS $OPENMP_CXXFLAGS"
 
 #############################################################
+# Check EIRENE
+#############################################################
+
+if test $with_eirene
+then
+  #cd - >/dev/null
+  AC_MSG_CHECKING([what mpi library fortran needs])
+  for mpif90 in mpichf90 mpi_mpifh
+  do
+    EIRENE_LIBS="-lgfortran -l$mpif90"
+    LIBS="$EXTRA_LIBS $EIRENE_LIBS"
+    AC_TRY_LINK([extern "C"
+  		char mpi_reduce_();] ,[return mpi_reduce_();], [MPI_found=yes ; break;
+    ],[MPI_found=no])
+  done
+  if ! test .$MPI_found == .yes
+  then
+    AC_MSG_RESULT([not found])
+    AC_MSG_ERROR([Failed to find the fortran mpi library
+    So far only mpich and openmpi are supported])
+  fi
+  AC_MSG_RESULT([found])
+  AC_MSG_CHECKING([whether EIRENE version is compatible])
+  dnl#LDFLAGS="-L$path $LDFLAGS_save"
+  test -d $with_eirene || echo "$with_eirene is not a folder"
+  #cd $with_eirene
+  #test -f libeirene4bout.a && mv --backup=t libeirene4bout.a libeirene4bout.a.bak
+  ar cru $with_eirene/libeirene4bout.a $with_eirene/*.o
+  dnl EIRENE_LIBS="-lgfortran -lmpichf90"
+  EIRENE_LIBS+=" -L$with_eirene -leirene4bout"
+  LIBS="$EXTRA_LIBS $EIRENE_LIBS"
+  AC_TRY_LINK([extern "C"
+  		char eirsrt_();] ,[return eirsrt_();], [EIRENE_found=yes ; break;
+  ],[EIRENE_found=no])
+  AC_MSG_RESULT([$EIRENE_found])
+  if test .$EIRENE_found = .yes
+  then
+    AC_MSG_NOTICE([Please note, this feature is still experimental])
+  else
+    AC_MSG_ERROR([Failed to link with EIRENE.
+Aborting ...])
+  fi
+fi
+
+#############################################################
 # Check types for SUNDIALS
 #############################################################
 
@@ -1593,6 +1639,10 @@ fi
 #############################################################
 # Gather configuration info for bout-config
 #############################################################
+
+# add EIRENE
+test $with_eirene && \
+  EXTRA_LIBS="$EXTRA_LIBS $EIRENE_LIBS"
 
 PREFIX=$PWD
 IDLCONFIGPATH=$PWD/tools/idllib
