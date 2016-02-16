@@ -1373,8 +1373,8 @@ Optional Packages:
   --with-cvode            	   Use the SUNDIALS CVODE solver
   --with-sundials           Use CVODE and IDA
   --with-facets           	   Build the interface to FACETS
-  --with-fftw             	   Set directory of FFTW3 library
-  --with-eirene           	   Set directory of EIRENE library
+  --with-fftw=/path	   Set directory of FFTW3 library
+  --with-eirene=/path     	   Set directory of EIRENE library
   --with-lapack           	   Use the LAPACK library
   --with-petsc            	   Enable PETSc interface
   --with-slepc                Enable SLEPc interface
@@ -8969,7 +8969,8 @@ rm -f core conftest.err conftest.$ac_objext \
   then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
 $as_echo "not found" >&6; }
-    as_fn_error $? "Failed to find the fortran mpi library" "$LINENO" 5
+    as_fn_error $? "Failed to find the fortran mpi library
+    So far only mpich and openmpi are supported" "$LINENO" 5
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
 $as_echo "found" >&6; }
