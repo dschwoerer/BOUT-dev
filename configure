@@ -9259,8 +9259,10 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$EIRENE_found" >&6; }
   if test .$EIRENE_found = .yes
   then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: Please note, this feature is still experimental" >&5
-$as_echo "$as_me: Please note, this feature is still experimental" >&6;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: Please note, this feature is still experimental." >&5
+$as_echo "$as_me: Please note, this feature is still experimental." >&6;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: EIRENE needs to be build with the same mpi library as BOUT++." >&5
+$as_echo "$as_me: EIRENE needs to be build with the same mpi library as BOUT++." >&6;}
   else
     as_fn_error $? "Failed to link with EIRENE.
 Aborting ..." "$LINENO" 5
