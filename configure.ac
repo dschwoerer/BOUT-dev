@@ -97,7 +97,8 @@ AC_LANG(C++)
 AC_DEFUN([BOUT_MSG_DEBUG],[
 	dnl Uncomment line below to enable debugging
 	dnl AC_MSG_NOTICE([debug: $1])
-	])
+	dnl have a none empty line, to avoid errors if it is used in an if statement
+	FUUBAR=1])
 dnl define the macro to check for libraries
 dnl first  argument is the name of the library
 dnl second arg is a function of that library
@@ -117,6 +118,7 @@ AC_DEFUN([BOUT_ADDPATH_CHECK_LIB],[
 	if test $BACL_found != yes ; then
 		for prefix in $extra_prefix /usr /opt $HOME $HOME/local /usr/local ; do
 			for path in $prefix $prefix/lib $prefix/lib64 $prefix/lib/x86_64-linux-gnu ; do
+				test -d $path || continue
 				LDFLAGS="-L$path $LDFLAGS_save"
 				BOUT_MSG_DEBUG([try link $1 with $path])
 				AC_TRY_LINK([extern "C"
@@ -140,16 +142,18 @@ AC_DEFUN([BOUT_ADDPATH_CHECK_LIB],[
 
 AC_DEFUN([BOUT_ADDPATH_CHECK_HEADER],[
 	AC_MSG_CHECKING([for $1])
-	CPPFLAGS_save=$CPPFLAGS
+	dnl CPPFLAGS_save=$CPPFLAGS
+	CPPFLAGS=$EXTRA_INCS
 	BACH_found=no
-	AS_IF([test .$4 != .yes], [extra_prefix="$4"],[extra_prefix=""])
+	AS_IF([test ".$4" != ".yes"], [extra_prefix="$4"],[extra_prefix=""])
 	AC_TRY_COMPILE([#include <$1>] ,, [BACH_found=yes ; break;
      		BOUT_MSG_DEBUG([found $1 without path])
 		],)
 	if test $BACH_found != yes ; then
 		for prefix in $extra_prefix /usr /opt $HOME $HOME/local /usr/local ; do
 			for path in $prefix $prefix/include ; do
-				CPPFLAGS="$CPPFLAGS_save -I$path"
+				dnl CPPFLAGS="$CPPFLAGS_save -I$path"
+				CPPFLAGS="$EXTRA_INCS -I$path"
 				BOUT_MSG_DEBUG([try compile $1 with $path])
 				AC_TRY_COMPILE([#include <$1>] ,, [BACH_found=yes ; break;
 						BOUT_MSG_DEBUG([found $1 with $path])
@@ -159,9 +163,10 @@ AC_DEFUN([BOUT_ADDPATH_CHECK_HEADER],[
 		done
 	fi
 	if test $BACH_found = yes ; then
+		EXTRA_INCS=$CPPFLAGS
 		AC_MSG_RESULT(yes)
 	else
-		CPPFLAGS=$CPPFLAGS_save
+		CPPFLAGS=$EXTRA_INCS
 		AC_MSG_RESULT(no)
 	fi
 	AS_IF([test .$BACH_found = .yes], [$2],[$3])
@@ -256,6 +261,11 @@ AC_FUNC_VPRINTF
 # Check for OpenMP support
 : ${enable_openmp=no}  # Disable by default
 #AC_OPENMP
+# disable openmp for cray compiler
+  CXXFLAGS_save=$CXXFLAGS
+  CXXFLAGS="$CXXFLAGS -h noomp"
+  #AC_MSG_CHECKING([for flag ])
+  AC_TRY_COMPILE([],[],[BOUT_MSG_DEBUG([-h noomp flag works]) ],[BOUT_MSG_DEBUG([-h noomp not supported]);CXXFLAGS=$CXXFLAGS_save])
 # Add the flag to both compile and link stages
 #CXXFLAGS="$CXXFLAGS $OPENMP_CXXFLAGS"
 #EXTRA_LIBS="$EXTRA_LIBS $OPENMP_CXXFLAGS"
@@ -280,7 +290,7 @@ elif test $with_optimize ; then
       OPT_FLAGS="-O"
     elif test $optimize == "fast"
     then
-      OPT_FLAGS="-Ofast -march=native -funroll-loops"
+      OPT_FLAGS="-O3 -Ofast -march=native -funroll-loops"
       DISABLE_CHECK=probably
 else
       AC_MSG_ERROR([unrecognized option: --with=optimize=$optimize])
@@ -288,7 +298,7 @@ else
   else
     if test $optimize -gt 3
     then
-      OPT_FLAGS="-Ofast -march=native -funroll-loops"
+      OPT_FLAGS="-O3 -Ofast -march=native -funroll-loops"
       DISABLE_CHECK=probably
     elif test $optimize -gt 2
     then
@@ -1106,7 +1116,7 @@ then
 
       if test "$OLDNCDF" == "1"; then
         NCLIB=`$NCCONF --libs | sed s/-lnetcdf/-lnetcdf_c++\ -lnetcdf/` # Note netcdf_c++ needed
-        LDFLAGS="$LDFLAGS -Wl,-rpath,`nc-config --prefix`/lib"
+        LDFLAGS="$LDFLAGS -Wl,-rpath,`$NCCONF --prefix`/lib"
 
         CXXFLAGS="$CXXFLAGS -DNCDF"
         echo " -> NetCDF support enabled"
