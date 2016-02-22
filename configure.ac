@@ -1417,7 +1417,8 @@ then
   AC_MSG_RESULT([$EIRENE_found])
   if test .$EIRENE_found = .yes
   then
-    AC_MSG_NOTICE([Please note, this feature is still experimental])
+    AC_MSG_NOTICE([Please note, this feature is still experimental.])
+    AC_MSG_NOTICE([EIRENE needs to be build with the same mpi library as BOUT++.])
   else
     AC_MSG_ERROR([Failed to link with EIRENE.
 Aborting ...])
