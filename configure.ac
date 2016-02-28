@@ -114,7 +114,7 @@ AC_DEFUN([BOUT_ADDPATH_CHECK_LIB],[
 		],)
 	if test $BACL_found != yes ; then
 		for prefix in $extra_prefix /usr /opt $HOME $HOME/local /usr/local ; do
-			for path in $prefix $prefix/lib $prefix/lib64 $prefix/x86_64-linux-gnu ; do
+			for path in $prefix $prefix/lib $prefix/lib64 $prefix/lib/x86_64-linux-gnu ; do
 				if test -d $path
 				then
 					LDFLAGS="-L$path $LDFLAGS_save"
