@@ -10,10 +10,11 @@
 # denotes the end of a fold
 __authors__ = 'Michael Loeiten'
 __email__   = 'mmag@fysik.dtu.dk'
-__version__ = '1.012'
-__date__    = '2016.02.17'
+__version__ = '1.0223'
+__date__    = '2016.04.19'
 
 import os
+import sys
 import re
 import itertools
 import glob
@@ -25,6 +26,7 @@ import numpy as np
 from boututils.run_wrapper import shell, launch, getmpirun
 from boututils.options import BOUTOptions
 from boututils.datafile import DataFile
+from boutdata.restart import redistribute, addnoise
 
 #{{{class basic_runner
 # As a child class uses the super function, the class must allow an
@@ -61,6 +63,7 @@ class basic_runner(object):
     def __init__(self,\
                  nproc        = 1,\
                  directory    = 'data',\
+                 prog_name    = None,\
                  solver       = None,\
                  mms          = None,\
                  atol         = None,\
@@ -105,6 +108,8 @@ class basic_runner(object):
                  series_add   = None,\
                  restart      = None,\
                  restart_from = None,\
+                 redistribute = None,\
+                 addnoise     = None,\
                  cpy_source   = None,\
                  cpy_grid     = None,\
                  sort_by      = None,\
@@ -122,6 +127,8 @@ class basic_runner(object):
         Input:
         nproc        -    The number of processors to use in the mpirun (int)
         directory    -    The directory of the BOUT.inp file (str)
+        prog_name    -    Name of the excecutable. If none is set the
+                          name will be set from the *.o file.
         solver       -    The solver to be used in the runs (str or
                           iterable)
         mms          -    Whether or not mms should be run (bool)
@@ -185,7 +192,24 @@ class basic_runner(object):
                           during a run
         restart      -    Wheter or not to use the restart files
                           ('overwrite' or 'append')
-        restart_from -    Path to restart from
+        restart_from -    Path to restart from (string)
+        redistribute -    The number of processors the redistribute the
+                          restart files to. Calls the redistribute
+                          function in boutdata.restart.
+                          Will only be effective if 'restart' is not None (int)
+        addnoise     -    Adding noise to the restart files by calling
+                          the addnoise function in boutdata.restart.
+                          Will only be effective if 'restart' is not
+                          None.
+                          Must be given as a dict with 'var' and 'scale'
+                          as keys if used.
+                          The value of 'var' must be a string or None.
+                          If set to None, then all the evolved variables will
+                          be added noise to.
+                          The value of 'scale' will be the scale of the
+                          noise, if set to None the default value will
+                          be used.
+                          (dict)
         cpy_source   -    Wheter or not to copy the source files to the
                           folder of the *.dmp.* files (bool)
         cpy_grid     -    Wheter or not to copy the grid files to the
@@ -272,6 +296,8 @@ class basic_runner(object):
         self._series_add      = series_add
         self._restart         = restart
         self._restart_from    = restart_from
+        self._redistribute    = redistribute
+        self._addnoise        = addnoise
         self._cpy_source      = cpy_source
         self._cpy_grid        = cpy_grid
         self._sort_by         = self._set_member_data(sort_by)
@@ -294,9 +320,8 @@ class basic_runner(object):
                 self._errors.append("TypeError")
                 raise TypeError("make must be boolean if set")
 
-        # Set self._program_name from the *.o file. Make the program if
-        # the *.o file is not found
-        self._set_program_name()
+        # Set self._program_name
+        self._set_program_name(prog_name)
 
         # Make the file if make is True
         if self._make:
@@ -481,8 +506,8 @@ class basic_runner(object):
         for run_no, combination in enumerate(combinations):
 
             # Get the folder to store the data
-            skip_run = self._prepare_dmp_folder(combination)
-            if skip_run:
+            do_run = self._prepare_dmp_folder(combination)
+            if not(do_run):
                 # Skip this run
                 continue
 
@@ -566,37 +591,74 @@ class basic_runner(object):
 #}}}
 
 #{{{_set_program_name
-    def _set_program_name(self):
-        """Set self._program_name from the *.o file. Make the program if
-        the *.o file is not found"""
+    def _set_program_name(self, prog_name=None):
+        """
+        Will set self._program_name and make the program if the
+        prog_name.o file is not found.
 
-        # Find the *.o file
-        o_files = glob.glob("*.o")
-        if len(o_files) > 0:
-            # Pick the first instance as the name
-            self._program_name = o_files[0].replace('.o', '')
-        else:
-            # Check if there exists a make
-            make_file = glob.glob("*make*")
-            if len(make_file) > 0:
-                # Run make
+        Input
+        prog_name - Name of the exceutable
+                    If None, the name will be set from the *.o file.
+        """
+
+        if prog_name is not(None):
+            # Check that a string is given
+            if type(prog_name) != str:
+                message = 'prog_name must be given as a string'
+                self._errors.append("TypeError")
+                raise TypeError(message)
+            # Search for file
+            if os.path.isfile(prog_name):
+                self._program_name = prog_name
+            else:
+                print(prog_name+" not found, now making:")
+                # File not found, make
                 self._run_make()
                 # Set the make flag to False, so it is not made again
                 self._make = False
-                # Search for the .o file again
-                o_files = glob.glob("*.o")
-                if len(o_files) > 0:
-                    self._program_name = o_files[0].replace('.o', '')
-                else:
-                    self._program_name = False
-                    message = 'The constructor could not make your'+\
-                              ' program'
+                # Search for file
+                if not(os.path.isfile(prog_name)):
+                    message = prog_name + ' could not be found after make. '
+                    message += 'Please check for spelling mistakes'
                     self._errors.append("RuntimeError")
                     raise RuntimeError(message)
+                else:
+                    self._program_name = prog_name
+        else:
+            # Find the *.o file
+            o_files = glob.glob("*.o")
+            if len(o_files) > 1:
+                message = "More than one *.o file found. "
+                message += "The first *.o file is chosen. "
+                message += "Consider setting 'prog_name'."
+                self._warning_printer(message)
+                self._warnings.append(message)
+                self._program_name = o_files[0].replace('.o', '')
+            elif len(o_files) == 1:
+                # Pick the first instance as the name
+                self._program_name = o_files[0].replace('.o', '')
             else:
-                self._errors.append("RuntimeError")
-                raise RuntimeError("No make file found in current" +\
-                                   " directory")
+                # Check if there exists a make
+                make_file = glob.glob("*make*")
+                if len(make_file) > 0:
+                    # Run make
+                    self._run_make()
+                    # Set the make flag to False, so it is not made again
+                    self._make = False
+                    # Search for the .o file again
+                    o_files = glob.glob("*.o")
+                    if len(o_files) > 0:
+                        self._program_name = o_files[0].replace('.o', '')
+                    else:
+                        self._program_name = False
+                        message = 'The constructor could not make your'+\
+                                  ' program'
+                        self._errors.append("RuntimeError")
+                        raise RuntimeError(message)
+                else:
+                    self._errors.append("RuntimeError")
+                    raise RuntimeError("No make file found in current" +\
+                                       " directory")
 #}}}
 
 #{{{_check_for_basic_instance_error
@@ -971,6 +1033,67 @@ class basic_runner(object):
                 self._errors.append("FileNotFoundError")
                 raise FileNotFoundError("No restart files found in " +\
                                  self._restart_from)
+        #}}}
+
+        #{{{Check if redistribute is set correctly
+        if self._redistribute is not None:
+            # Throw warning if restart is None
+            if self._restart is None:
+                message = "redistribute will be ignored as restart = None"
+                self._warning_printer(message)
+                self._warnings.append(message)
+            # Throw a warning if restart is append
+            elif self._restart == 'append':
+                message = "redistribute != None and restart = 'append' is "
+                message += "currently incompatible, setting restart to "
+                message += "'overwrite'"
+                if not(self._restart_from):
+                    message += " (previous files will be saved)"
+                self._warning_printer(message)
+                self._warnings.append(message)
+                self._restart = 'overwrite'
+            if type(self._redistribute) != int:
+                self._errors.append("TypeError")
+                raise TypeError ("redistribute must be set as an integer when set")
+            # If nproc is set, and this is incompatible with NPES
+            if self._nproc != self._redistribute:
+                raise RuntimeError("nproc and redistribute must be equal")
+        #}}}
+
+        #{{{Check if addnoise is set correctly
+        if self._addnoise is not None:
+            # Throw warning if restart is None
+            if self._restart is None:
+                message = "addnoise will be ignored as restart = None"
+                self._warning_printer(message)
+                self._warnings.append(message)
+
+            raise_error = False
+            if type(self._addnoise) == dict:
+                addnoise_keys = self._addnoise.keys()
+                if 'var' in addnoise_keys:
+                    if type(self._addnoise['var']) == str or\
+                       self._addnoise['var'] is None:
+                        if 'scale' in addnoise_keys:
+                            if \
+                            not(isinstance(self._addnoise['scale'], Number))\
+                            and (self._addnoise['scale'] is not None):
+                                raise_error = True
+                        else:
+                            raise_error = True
+                    else:
+                        raise_error = True
+                else:
+                    raise_error = True
+            else:
+                raise_error = True
+
+            if raise_error:
+                self._errors.append("TypeError")
+                message = "addnoise must be on the form "
+                message += "{'var'= string_or_none, "
+                message += "'scale'= number_or_none}"
+                raise TypeError (message)
         #}}}
 
         #{{{Check for options set in both member data and in the grid file
@@ -1708,17 +1831,25 @@ class basic_runner(object):
 #{{{_prepare_dmp_folder
     def _prepare_dmp_folder(self, combination):
         """
-        Set the folder to dump data in based on the input from the
-        combination.
+        Prepare the dump folder for runs
 
-        - Copy the input file to the final folder.
-        - Copy restart files if restart_from is set (can set skip_run=True)
+        - Obtain folder name and copy the input file to the final folder.
+        - Check if restart files are present if restart is set (set
+          restart to None if not found).
+        - Find appropriate mxg and myg if redistribute is set.
+        - Copy restart files if restart_from and/or redistribute is set
+        - Redistribute restart files if redistribute and restart is set
+        - Add noise to the restart files if addnoise and restart is set
         - Copy files if restart is set to overwrite
         - Copy the source files to the final folder is cpy_source is True.
 
-        Returns skip_run = True if there are any troubles with the copying
+        Returns do_run = False if there are any troubles with the copying
         """
-        # Obtain folder names
+
+        # do_run is set to True by default
+        do_run = True
+
+        #{{{ Obtain folder name and copy the input file
         folder_name = self._get_folder_name(combination)
         self._dmp_folder = os.path.join(self._directory, folder_name)
         # If the last character is '/', then remove it
@@ -1733,19 +1864,101 @@ class basic_runner(object):
             # Copy the input file into this folder
             src = os.path.join(self._directory, 'BOUT.inp')
             shutil.copy2(src, self._dmp_folder)
+        #}}}
 
-        # Copy restart files if restart_from is set
-        # skip_run is set to False by default
-        skip_run = False
+        #{{{ Toggle restart
+        dmp_files = glob.glob(os.path.join(self._dmp_folder, '*.restart.*'))
+        # If no dump files are found, set restart to "None"
+        if len(dmp_files) == 0 and\
+           self._restart is not None and\
+           self._restart_from is None:
+            message = "'restart' was set to " +self._restart+\
+                      ", but no restart files found."+\
+                      " Setting 'restart' to None"
+            self._restart = None
+            self._warning_printer(message)
+            self._warnings.append(message)
+        #}}}
+
+        #{{{ Find the appropriate mxg and myg if redistribute is set
+        if self._redistribute:
+            if not(self._MXG):
+                # Look in the input file
+                myOpts = BOUTOptions(self._directory)
+                # Check for MXG
+                if 'MXG' in myOpts.root.keys():
+                    redistribute_MXG = eval(myOpts.root['MXG'])
+                else:
+                    # Set MXG to defualt
+                    redistribute_MXG = 2
+            else:
+                redistribute_MXG = self._MXG
+            # Do the same for MYG
+            if not(self._MYG):
+                myOpts = BOUTOptions(self._directory)
+                if 'MYG' in myOpts.root.keys():
+                    redistribute_MYG = eval(myOpts.root['MYG'])
+                else:
+                    redistribute_MYG = 2
+            else:
+                redistribute_MYG = self._MYG
+        #}}}
+
+        #{{{ Copy restart files if restart_from and/or redistribute is set
         if self._restart and self._restart_from:
-            # Copy the files to restart
-            skip_run = self._copy_restart_files()
+            if not(self._redistribute):
+                # Copy the files to restart
+                do_run = self._copy_run_files()
+            else:
+                # Use the redistribute function to copy the restart file
+                do_run = self._check_if_run_already_performed(\
+                        restart_file_search_reason = 'redistribute')
 
-        # Save files if restart is set to "overwrite"
-        if self._restart == 'overwrite':
-            self._move_old_runs()
+                if do_run:
+                    print("\nCopying files from {0} to {1}\n".\
+                            format(self._restart_from, self._dmp_folder))
+                    do_run = redistribute(self._redistribute         ,\
+                                                path   = self._restart_from,\
+                                                output = self._dmp_folder  ,\
+                                                mxg    = redistribute_MXG  ,\
+                                                myg    = redistribute_MYG  ,\
+                                                )
+                    if not do_run:
+                        message = 'redistribute failed, run skipped'
+                        self._warning_printer(message)
+                        self._warnings.append(message)
 
-        # Copy the source files if cpy_source is True
+        elif self._restart and self._redistribute:
+            # Save the files from previous runs
+            dst = self._move_old_runs(folder_name = 'before_redistribution',\
+                                      include_restart = True)
+
+            do_run = redistribute(self._redistribute       ,\
+                                  path = dst               ,\
+                                  output = self._dmp_folder,\
+                                  mxg = redistribute_MXG   ,\
+                                  myg = redistribute_MYG   ,\
+                                  )
+        #}}}
+
+        #{{{ Save files if restart is set to "overwrite"
+        # NOTE: This is already done if self._redistribute is set
+        if self._restart == 'overwrite' and not(self._redistribute) and do_run:
+            self._move_old_runs(folder_name = 'restart', include_restart = False)
+        #}}}
+
+        #{{{ Add noise
+        if self._restart and self._addnoise and do_run:
+            print('Now adding noise\n')
+            if self._addnoise['scale'] is None:
+                self._addnoise['scale'] = 1e-5
+            addnoise(path = self._dmp_folder,\
+                     var = self._addnoise['var'],\
+                     scale = self._addnoise['scale'])
+            print('\n')
+        #}}}
+
+        #{{{ Copy the source files if cpy_source is True
         if self._cpy_source:
             # This will copy all C++ files to the dmp_folder
             cpp_extension= ['.cc', '.cpp', '.cxx', '.C', '.c++',\
@@ -1755,7 +1968,9 @@ class basic_runner(object):
                 file_names = glob.glob('*' + extension)
                 for a_file in file_names:
                     shutil.copy2(a_file, self._dmp_folder)
-        return skip_run
+        #}}}
+
+        return do_run
 #}}}
 
 #{{{_remove_data
@@ -1775,20 +1990,24 @@ class basic_runner(object):
             os.remove(f)
 
         # Remove dirs
-        folder_to_rm = glob.glob(os.path.join(self._dmp_folder, "run*"))
+        folder_to_rm = glob.glob(\
+                os.path.join(self._dmp_folder, "before_redistribution_*"))
+        folder_to_rm.extend(glob.glob(os.path.join(self._dmp_folder, "run_*")))
         # Filter to only inlcude folders
         folder_to_rm = [f for f in folder_to_rm if os.path.isdir(f)]
         for f in folder_to_rm:
-            os.removedirs(f)
+            shutil.rmtree(f)
 #}}}
 
 #{{{_check_if_run_already_performed
-    def _check_if_run_already_performed(self):
+    def _check_if_run_already_performed(self,\
+                                        restart_file_search_reason=None):
         """
         Checks if the run has been run previously.
 
-        If restart is set, and no files are found, a warning will be
-        printed.
+        Input
+        restart_file_search_reason - Reason to check for restart files
+                                     if not None.
 
         Returns
         True    - The run will be performed
@@ -1796,25 +2015,28 @@ class basic_runner(object):
         """
 
         dmp_files = glob.glob(os.path.join(self._dmp_folder, '*.dmp.*'))
-        # If no BOUT.inp files are found or if self._restart is not set
-        # (meaning that the run will be done even if files are found)
-        if len(dmp_files) != 0 and self._restart is None:
+
+        if restart_file_search_reason:
+            restart_files =\
+                    glob.glob(os.path.join(self._dmp_folder, '*.restart.*'))
+            # Check if dmp or restart files are found
+            if len(dmp_files) !=0 or len(restart_files) !=0:
+                message = "Restart or dmp files was found in " +\
+                          self._dmp_folder + " when " +\
+                          restart_file_search_reason + " was set. Run skipped."
+                self._warning_printer(message)
+                self._warnings.append(message)
+                return False
+            else:
+                return True
+        # Check if dmp files are found if restart is None
+        elif len(dmp_files) != 0 and self._restart is None:
             print('Skipping the run as *.dmp.* files was found in '\
                   + self._dmp_folder)
             print('To overwrite old files, run with'+\
                   ' self.execute_runs(remove_old=True)\n')
             return False
-        # Either no files are found, or restart is set
         else:
-            if len(dmp_files) == 0 and\
-               self._restart is not None and\
-               self._restart_from is None:
-                message = "'restart' was set to " +self._restart+\
-                          ", but no dmp files found."+\
-                          " Setting 'restart' to None"
-                self._restart = None
-                self._warning_printer(message)
-                self._warnings.append(message)
             return True
 #}}}
 
@@ -2381,38 +2603,37 @@ class basic_runner(object):
             print(folder + " created\n")
 #}}}
 
-#{{{_copy_restart_files
-    def _copy_restart_files(self):
+#{{{_copy_run_files
+    def _copy_run_files(self):
         """
-        Function which copies restart files from self._restart_from
+        Function which copies run files from self._restart_from
         """
-        # Check for files in dmp_folder
-        if len(glob.glob(os.path.join(self._dmp_folder,'*restart*'))) !=0 or\
-           len(glob.glob(os.path.join(self._dmp_folder,'*dmp*'))) !=0:
-            message = "Restart or dmp files was found in " + self._dmp_folder +\
-                      " when restart_from was set. Run skipped."
-            self._warning_printer(message)
-            self._warnings.append(message)
-            skip_run = True
-        else:
-            skip_run = False
 
-        if not skip_run:
+        do_run =\
+            self._check_if_run_already_performed(\
+                restart_file_search_reason = 'restart_from')
+
+        if do_run:
             print("\nCopying files from {0} to {1}\n".\
                   format(self._restart_from, self._dmp_folder))
 
             # Files with these extension will be given the
             # additional extension .cpy when copied to the destination
             # folder
-            extensions_w_cpy = ['inp', 'log.*']
+            extensions_w_cpy = ['inp']
+            # When the extension is not a real extension
+            has_extensions_w_cpy = ['log.*']
 
             if self._cpy_source:
                 extensions_w_cpy.extend(['cc' , 'cpp'  , 'cxx', 'C'  , 'c++',\
                                         'h'  , 'hpp'  , 'hxx', 'h++'])
 
-            # Additional files that will be copied to the destination
-            # folder
-            extensions = [*extensions_w_cpy, 'restart.*']
+            # Python 3 syntax (not python 2 friendly)
+            # extensions = [*extensions_w_cpy, *has_extensions_w_cpy, 'restart.*']
+            extensions = extensions_w_cpy
+            for item in has_extensions_w_cpy:
+                extensions.append(item)
+            extensions.append('restart.*')
 
             if self._restart == "append":
                 extensions.append("dmp.*")
@@ -2423,23 +2644,30 @@ class basic_runner(object):
                     glob.glob(os.path.join(self._restart_from, '*.'+extension))
                 for cur_file in file_names:
                     # Check if any of the extensions matches the current
-                    # string (must strip the '.' as "in" does not accept
-                    # wildcards
-                    if any([ewc.split('.')[0] in cur_file
+                    # string
+                    if any([cur_file.endswith(ewc)
                             for ewc in extensions_w_cpy]):
+                        # Add ".cpy" to the file name (without the path)
+                        name = os.path.split(cur_file)[-1] + '.cpy'
+                        shutil.copy2(cur_file, os.path.join(self._dmp_folder, name))
+                    # When the extension is not a real extension we must
+                    # remove "*" in the string as shutil doesn't accept
+                    # wildcards
+                    elif any([hewc.replace("*", "") in cur_file
+                            for hewc in has_extensions_w_cpy]):
                         # Add ".cpy" to the file name (without the path)
                         name = os.path.split(cur_file)[-1] + '.cpy'
                         shutil.copy2(cur_file, os.path.join(self._dmp_folder, name))
                     else:
                         shutil.copy2(cur_file, self._dmp_folder)
 
-        return skip_run
+        return do_run
 #}}}
 
-#{{{Save _move_old_runs
-    def _move_old_runs(self):
-        """Move old runs if restart is set to 'overwrite'"""
-        print("Moving old runs\n")
+#{{{_move_old_runs
+    def _move_old_runs(self, folder_name = 'restart', include_restart = False):
+        """Move old runs, return the destination path"""
+
         # Check for folders in the dmp directory
         directories = [\
                        name for name in\
@@ -2447,34 +2675,37 @@ class basic_runner(object):
                        os.path.isdir(os.path.join(\
                                     self._dmp_folder, name))\
                       ]
-        # Find occurrences of 'run' in these folders
-        prev_runs = [name for name in directories if 'run' in name]
+        # Find occurrences of 'folder_name', split, and cast result to number
+        restart_nr = [int(name.split('_')[-1]) for name in directories\
+                      if folder_name in name]
         # Check that the list is not empty
-        if len(prev_runs) != 0:
-            # Sort the folders alphabetically
-            prev_runs.sort()
-            # Pick the last of prev_runs
-            prev_runs = prev_runs[-1]
-            # Pick the number from the last run
-            # First split the string
-            overwrite_nr = prev_runs.split('_')
-            # Pick the last element of overwrite_nr, and cast it
-            # to an integer
-            overwrite_nr = int(overwrite_nr[-1])
-            # Add one to the overwrite_nr, as we want to create
+        if len(restart_nr) != 0:
+            # Sort the folders in ascending order
+            restart_nr.sort()
+            # Pick the last index
+            restart_nr = restart_nr[-1]
+            # Add one to the restart_nr, as we want to create
             # a new directory
-            overwrite_nr += overwrite_nr
+            restart_nr += 1
         else:
-            # Set the overwrite_nr
-            overwrite_nr = 1
+            # Set the restart_nr
+            restart_nr = 0
         # Create the folder for the previous runs
         self._create_folder(\
-                os.path.join(self._dmp_folder, 'run_' +\
-                             str(overwrite_nr)))
+                os.path.join(self._dmp_folder, folder_name + '_' +\
+                             str(restart_nr)))
 
         extensions_to_move = ['cpy', 'log.*', 'dmp.*',\
                               'cc' , 'cpp'  , 'cxx'  , 'C'  , 'c++',\
                               'h'  , 'hpp'  , 'hxx'  , 'h++']
+
+        if include_restart:
+            extensions_to_move.append('restart.*')
+
+        dst = os.path.join(self._dmp_folder,\
+                           folder_name + '_' + str(restart_nr))
+
+        print("Moving old runs to {}\n".format(dst))
 
         for extension in extensions_to_move:
             file_names =\
@@ -2485,9 +2716,9 @@ class basic_runner(object):
 
             # Move the files
             for cur_file in file_names:
-                dst = os.path.join(self._dmp_folder,\
-                                   "run_" + str(overwrite_nr))
                 shutil.move(cur_file, dst)
+
+        return dst
 #}}}
 #}}}
 
@@ -2754,8 +2985,6 @@ class basic_runner(object):
     #}}}
 #}}}
 #}}}
-
-
 
 #{{{class PBS_runner
 class PBS_runner(basic_runner):
@@ -3101,7 +3330,9 @@ class PBS_runner(basic_runner):
 
         # Make the script
         python_tmp  = '#!/usr/bin/env python\n'
-        python_tmp += 'import os\n'
+        python_tmp += 'import os, sys\n'
+        # Set the python path
+        python_tmp += 'sys.path = '+str(sys.path)+'\n'
         # Import the post processing function
         python_tmp += 'from ' + function.__module__ +\
                       ' import ' + function.__name__ + '\n'
@@ -3377,8 +3608,6 @@ class PBS_runner(basic_runner):
 #}}}
 #}}}
 #}}}
-
-
 
 #{{{if __name__ == '__main__':
 if __name__ == '__main__':
