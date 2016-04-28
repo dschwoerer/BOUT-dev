@@ -29,10 +29,13 @@
 #    * Searching for libs in lib and lib64
 #
 
-BOUT_VERSION="2.0"
+BOUT_VERSION="3.0"
 
 AC_PREREQ(2.59)
 AC_INIT(BOUT++, BOUT_VERSION, bd512@york.ac.uk)
+
+BOUT_VERSION_MAJOR=3
+BOUT_VERSION_MINOR=0
 
 AC_ARG_WITH(checks, [  --with-checks=no/1/2/3  	   Set run-time checking level])
 AC_ARG_WITH(signal, [  --with-signal=no        	   Disable SEGFAULT handling])
@@ -368,6 +371,12 @@ then
 fi
 
 echo
+
+#############################################################
+# Expose BOUT version
+#############################################################
+
+CXXFLAGS="$CXXFLAGS -DBOUT_VERSION_MAJOR=${BOUT_VERSION_MAJOR}"
 
 #############################################################
 # Git revision number

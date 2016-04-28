@@ -63,7 +63,7 @@
 
 #include "utils.hxx"
 
-const BoutReal BOUT_VERSION = 3;  ///< Version number
+const BoutReal BOUT_VERSION = BOUT_VERSION_MAJOR;  ///< Version number
 
 // BOUT++ main functions
 

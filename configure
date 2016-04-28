@@ -2189,6 +2189,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+BOUT_VERSION_MAJOR=3
+BOUT_VERSION_MINOR=0
+
 
 # Check whether --with-checks was given.
 if test "${with_checks+set}" = set; then :
@@ -4025,6 +4028,12 @@ then
 fi
 
 echo
+
+#############################################################
+# Expose BOUT version
+#############################################################
+
+CXXFLAGS="$CXXFLAGS -DBOUT_VERSION_MAJOR=${BOUT_VERSION_MAJOR}"
 
 #############################################################
 # Git revision number
