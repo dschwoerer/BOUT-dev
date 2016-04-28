@@ -34,6 +34,9 @@ BOUT_VERSION="2.0"
 AC_PREREQ(2.59)
 AC_INIT(BOUT++, BOUT_VERSION, bd512@york.ac.uk)
 
+BOUT_VERSION_MAJOR=2
+BOUT_VERSION_MINOR=0
+
 AC_ARG_WITH(checks, [  --with-checks=no/1/2/3  	   Set run-time checking level])
 AC_ARG_WITH(signal, [  --with-signal=no        	   Disable SEGFAULT handling])
 AC_ARG_WITH(track,  [  --with-track            	   Enable variable tracking])
@@ -370,6 +373,12 @@ then
 fi
 
 echo
+
+#############################################################
+# Expose BOUT version
+#############################################################
+
+CXXFLAGS="$CXXFLAGS -DBOUT_VERSION_MAJOR=${BOUT_VERSION_MAJOR}"
 
 #############################################################
 # Git revision number
