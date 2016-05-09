@@ -187,14 +187,18 @@ class DataFile_netCDF(DataFile):
         try:
             var = self.handle.variables[name]
         except KeyError:
-            # Not found. Try to find using case-insensitive search
-            var = None
-            for n in list(self.handle.variables.keys()):
-                if n.lower() == name.lower():
-                    print("WARNING: Reading '"+n+"' instead of '"+name+"'")
-                    var = self.handle.variables[n]
-            if var == None:
-                return None
+            try:
+                return self.handle.getncattr(name)
+            except:
+                # Not found. Try to find using case-insensitive search
+                var = None
+                for n in list(self.handle.variables.keys()):
+                    print (n.lower())
+                    if n.lower() == name.lower():
+                        print("WARNING: Reading '"+n+"' instead of '"+name+"'")
+                        var = self.handle.variables[n]
+                if var == None:
+                    return None
         ndims = len(var.dimensions)
         if ndims == 0:
             data = var.getValue()
