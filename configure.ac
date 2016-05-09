@@ -389,7 +389,7 @@ echo
 # Expose BOUT version
 #############################################################
 
-CXXFLAGS="$CXXFLAGS -DBOUT_VERSION_MAJOR=${BOUT_VERSION_MAJOR}"
+        CXXFLAGS="$CXXFLAGS -DBOUT_VERSION_MAJOR=${BOUT_VERSION_MAJOR}"
 
 #############################################################
 # Enable Backtrace if possible
@@ -414,7 +414,7 @@ rev=`git rev-parse HEAD`
 if test "$?" = "0"
 then
   # Attach revision info to flags
-  CXXFLAGS="$CXXFLAGS -DREVISION=$rev"
+  dnl CXXFLAGS="$CXXFLAGS -DREVISION=$rev"
   echo "Revision ID: $rev"
 fi
 
