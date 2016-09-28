@@ -39,10 +39,13 @@ void BoutException::Backtrace() {
   //output.write("\n[bt] Execution path:\n");
   message+=("====== Exception path ======\n");
   char buf[1024];
+  output.write("[bt][debug] trace size is %d\n",trace_size);
   for (i=1; i<trace_size; ++i)
     {
       snprintf(buf,1023,"[bt] #%d %s\n", i, messages[i]);
       message+=buf;
+      //if (trace[i] == NULL)
+      //  continue;
       /* find first occurence of '(' or ' ' in message[i] and assume
        * everything before that is the file name. (Don't go beyond 0 though
        * (string terminator)*/
@@ -83,7 +86,7 @@ BoutException::BoutException(const char* s, ...)
     va_end(ap);
     message.assign(buffer);
   }
-  message="====== Exception thrown ======\n"+message;
+  message="====== Exception thrown ======\n"+message+"\n";
 
   this->Backtrace();
 
