@@ -724,7 +724,7 @@ const Field2D Laplace_par(const Field2D &f) {
 	return D2DY2(f)/mesh->g_22 + DDY(mesh->J/mesh->g_22)*DDY(f)/mesh->J;
 }
 
-const Field3D Laplace_par(const Field3D &f) {
+Field3D Laplace_par(const Field3D &f) {
 	return D2DY2(f)/mesh->g_22 + DDY(mesh->J/mesh->g_22)*DDY(f)/mesh->J;
 }
 
@@ -749,7 +749,7 @@ const Field2D Laplace(const Field2D &f) {
 	return result;
 }
 
-const Field3D Laplace(const Field3D &f) {
+Field3D Laplace(const Field3D &f) {
 #ifdef CHECK
 	int msg_pos = msg_stack.push("Laplace( Field3D )");
 #endif
@@ -1392,7 +1392,6 @@ const Field3D bracket(const Field3D &f, const Field3D &g, BRACKET_METHOD method,
 				fs = f.shiftZ(true);
 				gs = g.shiftZ(true);
 			}
-    
 			int ncz = mesh->ngz - 1;
 			for(int jx=mesh->xstart;jx<=mesh->xend;jx++)
 				for(int jy=mesh->ystart;jy<=mesh->yend;jy++)
@@ -1428,26 +1427,101 @@ const Field3D bracket(const Field3D &f, const Field3D &g, BRACKET_METHOD method,
 			break;
 		}
 		case BRACKET_ARAKAWA: {
-			// reimplementation with the focus on speed
+			// Arakawa scheme for perpendicular flow
+    
+			result.allocate();
+    
 			Field3D fs = f;
 			Field3D gs = g;
 			if(mesh->ShiftXderivs && (mesh->ShiftOrder == 0)) {
 				fs = f.shiftZ(true);
 				gs = g.shiftZ(true);
 			}
+                        BoutReal* f=fs[0][0];
+                        BoutReal* g=gs[0][0];
 			int ncz = mesh->ngz - 1;
-			//#warning "TODO: Select DDX_C2 stencil"
+                        int dx=mesh->ngz*mesh->ngy;
+                        int dy=mesh->ngz;
+                        for(int jx=mesh->xstart;jx<=mesh->xend;jx++)
+                          for(int jy=mesh->ystart;jy<=mesh->yend;jy++){
+                            int xy=mesh->ngz*(jy+mesh->ngy*jx);
+			for(int jz=0;jz<ncz;jz++) {
+				int jzp  = (jz + 1) % ncz;
+				int jzm  = (jz - 1 + ncz) % ncz;
+                                int xyz  = xy+jz;
+                                int xyzp = xy+jzp;
+                                int xyzm = xy+jzm;
+				// J++ = DDZ(f)*DDX(g) - DDX(f)*DDZ(g)
+                                BoutReal fdz=f[xyzp]-f[xyzm];
+                                BoutReal gdx=g[xyz+dx]-g[xyz-dx];
+                                BoutReal fdx=f[xyz+dx]-f[xyz-dx];
+                                BoutReal gdz=g[xyzp]-g[xyzm];
+				BoutReal Jpp = fdz * gdx - fdx * gdz ;
+
+				// J+x
+				BoutReal Jpx = (g[xyz+dx]*(f[xyzp+dx]-f[xyzm+dx]) -
+                                                g[xyz-dx]*(f[xyzp-dx]-f[xyzm-dx] )-
+                                                g[xyzp]*(f[xyzp+dx]-f[xyzp-dx]) +
+                                                g[xyzm]*(f[xyzm+dx]-f[xyzm-dx]) );
+				// Jx+
+				BoutReal Jxp = ( g[xyzp+dx]*(f[xyzp]-f[xyz+dx]) -
+                                                 g[xyzm-dx]*(f[xyz-dx]-f[xyzm]) -
+                                                 g[xyzp-dx]*(f[xyzp]-f[xyz-dx]) +
+                                                 g[xyzm+dx]*(f[xyz+dx]-f[xyzm]) );
+				//Jpx=0;
+				//Jxp=0;
+                                result[jx][jy][jz] = (Jpp + Jpx + Jxp) *( 0.25 / ( 3. * mesh->dx[jx][jy] * mesh->dz));
+			}}
+			if(mesh->ShiftXderivs && (mesh->ShiftOrder == 0))
+				result = result.shiftZ(false); // Shift back
+			break;
+		}
+                        /*		case BRACKET_ARAKAWA+6: {
+			// reimplementation with the focus on speed
+			Field3D fs = f;
+			Field3D gs = g;
+			if(mesh->ShiftXderivs && (mesh->ShiftOrder == 0)) {
+				fs = f.shiftZ(true);
+ 				gs = g.shiftZ(true);
+			}
+
+                        { //debug
+                          fs.allocate();
+                          gs.allocate();
+                        }
+			int ncz = mesh->ngz - 1;
+                        
+                        for (auto f:{fs,gs}){
+                          int z=mesh->ngz-1;
+                          for (int x=0;x<mesh->ngx;++x)
+                            for (int y=0;y<mesh->ngy;++y)
+                              f[x][y][z]=nan("");
+                        }
 			Field3D fsdx=DDX(fs,CELL_DEFAULT,DIFF_C2);
 			Field3D fsdz=DDZ(fs,CELL_DEFAULT,DIFF_C2,true);
 			Field3D gsdx=DDX(gs,CELL_DEFAULT,DIFF_C2);
 			Field3D gsdz=DDZ(gs,CELL_DEFAULT,DIFF_C2,true);
 			result = fsdz*gsdx-fsdx*gsdz;
+                        { //debug
+                          int z=mesh->ngz-1;
+                          for (int x=0;x<mesh->ngx;++x)
+                            for (int y=0;y<mesh->ngy;++y)
+                              result[x][y][z]=0;
+                        }
 			int dxp=mesh->ngy*mesh->ngz;
 			//for(int jx=mesh->xstart;jx<=mesh->xend;jx++){
 			//	int jxp=jx+1;
 			//	int jxm=jx-1;
 			//	for(int jy=mesh->ystart;jy<=mesh->yend;jy++){
 			//		for(int jz=0;jz<ncz;jz++) {
+
+                        for (auto f:{fs,gs,fsdx,fsdz,gsdx,gsdz}){
+                          int z=mesh->ngz-1;
+                          for (int x=0;x<mesh->ngx;++x)
+                            for (int y=0;y<mesh->ngy;++y)
+                              f[x][y][z]=nan("");
+                        }
+                        
 			BoutReal * f  =fs[0][0];
 			BoutReal * g  =gs[0][0];
 			BoutReal * fdx=fsdx[0][0];
@@ -1456,7 +1530,8 @@ const Field3D bracket(const Field3D &f, const Field3D &g, BRACKET_METHOD method,
 			BoutReal * gdz=gsdz[0][0];
 
 			BoutReal * r  =result[0][0];
-			
+
+                        
 			BoutReal dzc=1./(mesh->dz*2.);
 			int imax=(mesh->xend+1)*mesh->ngy*mesh->ngz;
 			//for (int i = mesh->start*mesh->ngy*mesh->ngz){
@@ -1506,7 +1581,7 @@ const Field3D bracket(const Field3D &f, const Field3D &g, BRACKET_METHOD method,
 			if(mesh->ShiftXderivs && (mesh->ShiftOrder == 0))
 				result = result.shiftZ(false); // Shift back
 			break;
-		}
+                        }*/
 		case BRACKET_SIMPLE: {
 			// Use a subset of terms for comparison to BOUT-06
 			result = VDDX(DDZ(f), g) + VDDZ(-DDX(f), g);
