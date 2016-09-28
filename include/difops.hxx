@@ -115,11 +115,11 @@ const Field3D Laplace_perp(const Field3D &f);
 
 // Parallel Laplacian operator
 const Field2D Laplace_par(const Field2D &f);
-const Field3D Laplace_par(const Field3D &f);
+Field3D Laplace_par(const Field3D &f);
 
 // Full Laplacian operator (par + perp)
 const Field2D Laplace(const Field2D &f);
-const Field3D Laplace(const Field3D &f);
+Field3D Laplace(const Field3D &f);
 
 // Terms of form b0 x Grad(phi) dot Grad(A)
 const Field2D b0xGrad_dot_Grad(const Field2D &phi, const Field2D &A);
