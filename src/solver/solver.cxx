@@ -526,6 +526,9 @@ int Solver::solve(int NOUT, BoutReal TIMESTEP) {
 
 
   output.write("Solver running for %d outputs with output timestep of %e\n", NOUT, TIMESTEP);
+  if (freqDefault > 1)
+    output.write("Solver running for %d outputs with monitor timestep of %e\n",
+                 NOUT/freqDefault, TIMESTEP*freqDefault);
   
   // Initialise
   if(init(restarting, NOUT, TIMESTEP)) {
@@ -731,6 +734,7 @@ void Solver::outputVars(Datafile &outputfile) {
 void Solver::addMonitor(int (& MonitorFuncRef )(Solver *solver, BoutReal simtime, int iter, int NOUT)
                         , MonitorPosition pos) {
   MonitorFunc * mon = new MonitorFunc(&MonitorFuncRef);
+  mon->timestep=-1;
   addMonitor(mon,pos);
 }
 
@@ -739,7 +743,7 @@ void Solver::addMonitor(int (& MonitorFuncRef )(Solver *solver, BoutReal simtime
 /// as the timestep cannot be changed afterwards
 void Solver::addMonitor(Monitor * mon, MonitorPosition pos) {
   if (mon->timestep > 0){ // not default
-    if (initCalled && timestep < 0){
+    if (!initCalled && timestep < 0){
       timestep = mon->timestep;
     }
     if (!isMultiple(timestep,mon->timestep))
@@ -797,10 +801,12 @@ int Solver::call_monitors(BoutReal simtime, int iter, int NOUT) {
     // Call C function monitors
     //for(std::list<Monitor*>::iterator it = monitors.begin(); it != monitors.end(); it++) {
     for (auto it: monitors){
-      // Call each monitor one by one
-      int ret = it->call(this, simtime,iter, NOUT);
-      if(ret)
-        throw BoutException("Monitor signalled to quit");
+      if ((iter % it->freq)==0){
+        // Call each monitor one by one
+        int ret = it->call(this, simtime,iter/it->freq, NOUT/it->freq);
+        if(ret)
+          throw BoutException("Monitor signalled to quit");
+      }
     }
   } catch (BoutException &e) {
     // User signalled to quit
@@ -814,9 +820,11 @@ int Solver::call_monitors(BoutReal simtime, int iter, int NOUT) {
   }
   
   // Reset iteration and wall-time count
-  rhs_ncalls = 0;
-  rhs_ncalls_i = 0;
-  rhs_ncalls_e = 0;
+  if ((iter%freqDefault) == 0){
+    rhs_ncalls = 0;
+    rhs_ncalls_i = 0;
+    rhs_ncalls_e = 0;
+  }
   
   return 0;
 }
