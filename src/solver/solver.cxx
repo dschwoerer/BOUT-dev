@@ -790,33 +790,32 @@ int Solver::call_monitors(BoutReal simtime, int iter, int NOUT) {
       restart.write("%s/BOUT.restart_%04d.%s", restartdir.c_str(), iteration, restartext.c_str());
     }
   }
-  
   try {
     // Call physics model monitor
     if(model) {
       if(model->runOutputMonitor(simtime, iter, NOUT))
         throw BoutException("Monitor signalled to quit");
     }
-    
+   
+  iter++; 
     // Call C function monitors
-    //for(std::list<Monitor*>::iterator it = monitors.begin(); it != monitors.end(); it++) {
     for (auto it: monitors){
       if ((iter % it->freq)==0){
         // Call each monitor one by one
-        int ret = it->call(this, simtime,iter/it->freq, NOUT/it->freq);
+        int ret = it->call(this, simtime,iter/it->freq-1, NOUT/it->freq);
         if(ret)
           throw BoutException("Monitor signalled to quit");
       }
     }
   } catch (BoutException &e) {
     // User signalled to quit
-    if( enablerestart ) {
+    /*if( enablerestart ) {
       // Write restart to a different file
       restart.write("%s/BOUT.final.%s", restartdir.c_str(), restartext.c_str());
-    }
+      }*/
     
-    output.write("Monitor signalled to quit. Returning\n");
-    return 1;
+    //output.write("Monitor signalled to quit. Returning\n");
+    throw;
   }
   
   // Reset iteration and wall-time count
