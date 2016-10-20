@@ -93,7 +93,7 @@ bool Datafile::openr(const char *format, ...) {
   if(format == (const char*) NULL)
     return 1;
   va_start(ap, format);
-    vsprintf(filename, format, ap);
+  vsprintf(filename, format, ap);
   va_end(ap);
   
   // Get the data format
@@ -123,11 +123,11 @@ bool Datafile::openr(const char *format, ...) {
 
 bool Datafile::openw(const char *format, ...) {
   if(!enabled)
-    return true;
+    throw BoutException("Datafile is disabled!");
   
   va_list ap;  // List of arguments
   if(format == (const char*) NULL)
-    return 1;
+    throw BoutException("No name given!");
   va_start(ap, format);
   vsprintf(filename, format, ap);
   va_end(ap);
@@ -136,7 +136,7 @@ bool Datafile::openw(const char *format, ...) {
   file = FormatFactory::getInstance()->createDataFormat(filename, parallel);
   
   if(!file)
-    return false;
+    throw BoutException("The format factory failed!");
   
   // If parallel do not want to write ghost points, and it is easier then to ignore the boundary guard cells as well
   if (parallel) {
@@ -158,10 +158,9 @@ bool Datafile::openw(const char *format, ...) {
     int MYPE;
     MPI_Comm_rank(BoutComm::get(), &MYPE);
     if(!file->openw(filename, MYPE))
-      return false;
+      throw BoutException("Failed to open file for writing!");
   }
-  
-  return true;
+  return true; // no errors
 }
 
 bool Datafile::opena(const char *format, ...) {
@@ -423,20 +422,20 @@ bool Datafile::write() {
     return true; // Just pretend it worked
   
   if(!file)
-    return false;
+    throw BoutException("Cannot write - no file to write to - aborting!");
   
   if(openclose) {
     // Open the file
     int MYPE;
     MPI_Comm_rank(BoutComm::get(), &MYPE);
     if(!file->openw(filename, MYPE, appending))
-      return false;
+      throw BoutException("Failure writing to file - failed to open the file ... !");
     appending = true;
   }
 
   
   if(!file->is_valid())
-    return false;
+    throw BoutException("Failure writing to file - file is not valid ... !");
 
   if(floats)
     file->setLowPrecision();
