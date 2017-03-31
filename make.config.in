@@ -86,7 +86,7 @@ all: $(BOUT_TOP)/config.status $(BOUT_TOP)/make.config $(DIRS) $(TARGET)
 ####################################################################
 
 $(DIRS):
-	@$(MAKE) --no-print-directory -s -C $@ all
+	@BOUT_TOP=`readlink -f $(BOUT_TOP)` $(MAKE) --no-print-directory -s -C $@ all
 
 # Create 'lib' and 'include' incase they don't exist
 $(BOUT_TOP)/include $(BOUT_TOP)/lib:
