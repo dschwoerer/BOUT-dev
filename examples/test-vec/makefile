@@ -1,6 +1,6 @@
 
 BOUT_TOP	= ../..
 
-SOURCEC		= gas_compress.cxx
+SOURCEC		= testVec.cxx
 
 include $(BOUT_TOP)/make.config
