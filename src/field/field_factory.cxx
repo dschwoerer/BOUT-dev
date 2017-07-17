@@ -43,6 +43,8 @@ FieldGenerator* generator(BoutReal *ptr) {
   return new FieldValuePtr(ptr);
 }
 
+size_t field_gen_cache_hit;
+size_t field_gen_cache_miss;
 //////////////////////////////////////////////////////////
 // FieldFactory public functions
 
@@ -293,8 +295,10 @@ FieldGenerator* FieldFactory::resolve(string &name) {
     map<string, FieldGenerator*>::iterator it = cache.find(key);
     if(it != cache.end()) {
       // Found in cache
+      field_gen_cache_hit++;
       return it->second;
     }
+    field_gen_cache_miss++;
 
     // Look up in options
 
@@ -346,9 +350,11 @@ FieldGenerator* FieldFactory::parse(const string &input, Options *opt) {
 
   map<string, FieldGenerator*>::iterator it = cache.find(key);
   if(it != cache.end()) {
+    field_gen_cache_hit++;
     // Found in cache
     return it->second;
   }
+  field_gen_cache_miss++;
 
   // Save the current options
   Options *oldoptions = options;

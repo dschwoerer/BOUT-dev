@@ -12,6 +12,8 @@
 
 #include <output.hxx>
 
+extern size_t field_gen_cache_miss;
+extern size_t field_gen_cache_hit;
 OptionsReader* OptionsReader::instance = NULL;
 
 OptionsReader* OptionsReader::getInstance() {
@@ -55,6 +57,14 @@ void OptionsReader::write(Options *options, const char *file, ...) {
 
   parser->write(options, filename);
 
+  if (field_gen_cache_hit + field_gen_cache_miss){
+    std::ofstream cache_stats;
+
+    cache_stats.open(CACHE_STATS, std::ios_base::app);
+    cache_stats << field_gen_cache_miss << "  " << field_gen_cache_hit << std::endl;
+
+    printf("%d %d\n",field_gen_cache_miss,field_gen_cache_hit);
+  }
   delete[] filename;
   delete parser;
 }
