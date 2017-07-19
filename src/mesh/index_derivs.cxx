@@ -838,7 +838,7 @@ void derivs_set(Options *options, DiffLookup *table, const char* name, Mesh::upw
 
 void derivs_set(Options *options, DiffLookup *table, const char* name, Mesh::flux_func &f, Mesh::inner_boundary_upwind_func &f_in, Mesh::outer_boundary_upwind_func &f_out) {
   string label;
-  options->get(name, label, "C2", false);
+  options->get(name, label, "SPLIT");
 
   DIFF_METHOD method = lookupFunc(table, label); // Find the function
   printFuncName(method); // Print differential function name
