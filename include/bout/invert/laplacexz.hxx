@@ -1,16 +1,16 @@
 /**************************************************************************
  * Perpendicular Laplacian inversion in X-Z
  *
- * Equation solved is: 
+ * Equation solved is:
  *
  * Div( A * Grad_perp(x) ) + B*x = b
- * 
+ *
  *
  **************************************************************************
  * Copyright 2015 B.D.Dudson
  *
  * Contact: Ben Dudson, bd512@york.ac.uk
- * 
+ *
  * This file is part of BOUT++.
  *
  * BOUT++ is free software: you can redistribute it and/or modify
@@ -34,21 +34,26 @@
 #include <options.hxx>
 #include <field3d.hxx>
 #include <bout/mesh.hxx>
+#include <unused.hxx>
 
 class LaplaceXZ {
 public:
-  LaplaceXZ(Mesh *m, Options *options) {}
+  LaplaceXZ(Mesh *UNUSED(m), Options *UNUSED(options)) {}
   virtual ~LaplaceXZ() {}
 
   virtual void setCoefs(const Field2D &A, const Field2D &B) = 0;
-  virtual void setCoefs(const Field3D &A, const Field3D &B) { setCoefs(A.DC(), B.DC()); }
-  
+  virtual void setCoefs(const Field3D &A, const Field3D &B) { setCoefs(DC(A), DC(B)); }
+
   virtual Field3D solve(const Field3D &b, const Field3D &x0) = 0;
-  
+
   static LaplaceXZ* create(Mesh *m, Options *opt = NULL);
+protected:
+  static const int INVERT_DC_GRAD  = 1;
+  static const int INVERT_AC_GRAD  = 2;  // Use zero neumann (NOTE: AC is a misnomer)
+  static const int INVERT_SET      = 16; // Set boundary to x0 value
+  static const int INVERT_RHS      = 32; // Set boundary to b value
 private:
-  
+
 };
 
 #endif // __LAPLACEXZ_H__
-

@@ -40,7 +40,7 @@ pause = False
 ###################
 
 
-def showdata(vars, titles=[], legendlabels = [], surf = [], polar = [], tslice = 0, movie = 0, intv = 1, Ncolors = 25, x = [], y = [], global_colors = False, symmetric_colors = False):
+def showdata(vars, titles=[], legendlabels = [], surf = [], polar = [], tslice = 0, movie = 0, intv = 1, Ncolors = 25, x = [], y = [], global_colors = False, symmetric_colors = False,hold_aspect=False):
     """
     A Function to animate time dependent data from BOUT++
     Requires numpy, mpl_toolkits, matplotlib, boutdata libaries.
@@ -300,7 +300,7 @@ def showdata(vars, titles=[], legendlabels = [], surf = [], polar = [], tslice =
     if (tslice == 0):           # Only wish to collect time data if it matches
         try:
             t = collect('t_array')
-            if t == None:
+            if t is None:
                 raise ValueError("t_array is None")
             if len(t) != Nt[0][0]:
                 raise ValueError("t_array is wrong size")
@@ -311,19 +311,28 @@ def showdata(vars, titles=[], legendlabels = [], surf = [], polar = [], tslice =
     Nframes = int(Nt[0][0]/intv)
 
     # Generate grids for plotting
-    x = []
-    y = []
+    # Try to use provided grids where possible 
+    xnew = []
+    ynew = []
     for i in range(0,Nvar):
-        x.append([])
-        for j in range(0, Nlines[i]):
-            x[i].append(linspace(0,Nx[i][j]-1, Nx[i][j]))
+        xnew.append([])
+        try:
+            xnew[i].append(x[i])
+        except:	
+            for j in range(0, Nlines[i]):
+                xnew[i].append(linspace(0,Nx[i][j]-1, Nx[i][j]))
 
         #x.append(linspace(0,Nx[i][0]-1, Nx[i][0]))
+        
         if (Ndims[i][0] == 3):
-            y.append(linspace(0, Ny[i][0]-1, Ny[i][0]))
+            try:
+                ynew.append(y[i])
+            except:        
+                ynew.append(linspace(0, Ny[i][0]-1, Ny[i][0]))
         else:
-            y.append(0)
-
+            ynew.append(0)
+    x = xnew
+    y = ynew
     # Determine range of data.  Used to ensure constant colour map and
     # to set y scale of line plot.
     fmax = []
@@ -440,11 +449,15 @@ def showdata(vars, titles=[], legendlabels = [], surf = [], polar = [], tslice =
 
         elif (contour[i] == 1):
             ax.append(fig.add_subplot(row,col,i+1))
-            ax[i].set_xlim((0,Nx[i][0]-1))
-            ax[i].set_ylim((0,Ny[i][0]-1))
+            #ax[i].set_xlim((0,Nx[i][0]-1))
+            #ax[i].set_ylim((0,Ny[i][0]-1))
+            ax[i].set_xlim(min(x[i]),max(x[i]))
+            ax[i].set_ylim(min(y[i]),max(y[i]))
             ax[i].set_xlabel(r'x')
             ax[i].set_ylabel(r'y')
             ax[i].set_title(titles[i])
+            if hold_aspect:
+                ax[i].set_aspect('equal')
             plots.append(ax[i].contourf(x[i][0],y[i],vars[i][0][0,:,:].T, Ncolors, lw=0, levels=clevels[i] ))
             plt.axes(ax[i])
             cbars.append(fig.colorbar(plots[i], format='%1.1e'))
@@ -515,22 +528,26 @@ def showdata(vars, titles=[], legendlabels = [], surf = [], polar = [], tslice =
         index = j*intv
 
         for j in range(0,Nvar):
-                if (lineplot[j] == 1):
-                    for k in range(0,Nlines[j]):
-                        lines[j][k].set_data(x[j][k], vars[j][k][index,:])
-                elif (contour[j] == 1):
-                    plots[j] = ax[j].contourf(x[j][0],y[j],vars[j][0][index,:,:].T, Ncolors, lw=0, levels=clevels[j])
-                elif (surf[j] == 1):
-                    ax[j] = fig.add_subplot(row,col,j+1, projection='3d')
-                    plots[j] = ax[j].plot_wireframe(x[j][0], y[j], vars[j][0][index,:,:].T, rstride=ystride[j], cstride=xstride[j])
-                    ax[j].set_zlim(fmin[j],fmax[j])
-                    ax[j].set_xlabel(r'x')
-                    ax[j].set_ylabel(r'y')
-                    ax[j].set_title(titles[j])
-                elif (polar[j] == 1):
-                    plots[j] = ax[j].contourf(theta[j], r[j], vars[j][0][index,:,:].T, levels=clevels[j])
-                    ax[j].set_rmax(Nx[j][0]-1)
-
+            if (lineplot[j] == 1):
+                # No cla() call for line plots
+                for k in range(0,Nlines[j]):
+                    lines[j][k].set_data(x[j][k], vars[j][k][index,:])
+            elif (contour[j] == 1):
+                ax[j].cla()
+                plots[j] = ax[j].contourf(x[j][0],y[j],vars[j][0][index,:,:].T, Ncolors, lw=0, levels=clevels[j])
+            elif (surf[j] == 1):
+                ax[j].cla()
+                ax[j] = fig.add_subplot(row,col,j+1, projection='3d')
+                plots[j] = ax[j].plot_wireframe(x[j][0], y[j], vars[j][0][index,:,:].T, rstride=ystride[j], cstride=xstride[j])
+                ax[j].set_zlim(fmin[j],fmax[j])
+                ax[j].set_xlabel(r'x')
+                ax[j].set_ylabel(r'y')
+                ax[j].set_title(titles[j])
+            elif (polar[j] == 1):
+                ax[j].cla()
+                plots[j] = ax[j].contourf(theta[j], r[j], vars[j][0][index,:,:].T, levels=clevels[j])
+                ax[j].set_rmax(Nx[j][0]-1)
+            
         if (tslice == 0):
             title.set_text('t = %1.2e' % t[index])
         else:
