@@ -6,10 +6,7 @@ BOUT_TOP = ../..
 
 BOUT_TEST_DIR = .
 
-GTEST_DIR = $(BOUT_TOP)/googletest/googletest
-GMOCK_DIR = $(BOUT_TOP)/googletest/googlemock
-
-GTEST_SOURCES = $(GTEST_DIR)/src/gtest-all.cc
+GTEST_DIR ?= $(BOUT_TOP)/googletest/googletest
 
 # Flags passed to the preprocessor.
 # Set Google Test's header directory as a system directory, such that
@@ -42,8 +39,13 @@ clean ::
 
 # Download Google Test
 $(GTEST_SENTINEL) :
-	echo "Downloading Google Test"
-	git submodule update --init --recursive
+	@if which gtest-config &>/dev/null;\
+	then \
+	    touch $@ ;\
+	else \
+	    echo "Downloading Google Test" ;\
+	    git submodule update --init --recursive ;\
+	fi
 
 # For simplicity and to avoid depending on Google Test's
 # implementation details, the dependencies specified below are
@@ -67,7 +69,7 @@ gtest.a : gtest-all.o
 	@echo "  Linking" $@
 	@$(AR) $(ARFLAGS) $@ $^
 
-bout_test_main.a : gtest-all.o bout_test_main.o
+bout_test_main.a : bout_test_main.o
 	@echo "  Linking" $@
 	@$(AR) $(ARFLAGS) $@ $^
 
@@ -83,7 +85,13 @@ $(TEST_OBJECTS): $(LIB) $(GTEST_SENTINEL)
 
 serial_tests: makefile $(BOUT_TOP)/make.config $(OBJ) $(LIB) $(SUB_LIBS) $(TEST_OBJECTS) bout_test_main.a
 	@echo "  Linking tests"
-	@$(LD) -o $@ $(TEST_OBJECTS) bout_test_main.a $(LDFLAGS) $(BOUT_LIBS) $(SUB_LIBS)
+	@if which gtest-config &>/dev/null;\
+	then \
+	    $(LD) -o $@ $(TEST_OBJECTS) bout_test_main.a $(LDFLAGS) $(BOUT_LIBS) \
+	           $(SUB_LIBS)  $$(gtest-config --libs) ;\
+	else \
+	    $(LD) -o $@ $(TEST_OBJECTS) bout_test_main.a $(LDFLAGS) $(BOUT_LIBS) $(SUB_LIBS) ;\
+	fi
 
 # Note: This depends on GTEST_SENTINEL, which checks out Google Test if not present
 #       The correct behaviour relies on the dependencies being checked in left-to-right order
