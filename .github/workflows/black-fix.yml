@@ -22,10 +22,16 @@ jobs:
         pip3 install black
 
     - name: Version
-      run: python --version ; black --version
+      run: |
+        python3 --version
+        black --version || :
+        black3 --version || :
 
     - name: Run black
-      run: black tests/ tools/
+      run: |
+        pwd
+        ls
+        black tests/ tools/
 
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
