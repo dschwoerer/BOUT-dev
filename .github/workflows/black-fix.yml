@@ -1,0 +1,26 @@
+name: black
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "test"
+
+jobs:
+  php-cs-fixer:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.head_ref }}
+    # This also installs git-clang-format
+    - name: Install clang-format
+      run: sudo apt install black
+
+    - name: Run black
+      run: black tests/ tools/
+
+    - uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Apply black changes
