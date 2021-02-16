@@ -24,15 +24,13 @@ jobs:
     - name: Version
       run: |
         python3 --version
-        black --version || :
-        black3 --version || :
-        ls $HOME/.local/bin
+        $HOME/.local/bin/black --version
 
     - name: Run black
       run: |
         pwd
         ls
-        black tests/ tools/
+        $HOME/.local/bin/black tests/ tools/
 
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
