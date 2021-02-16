@@ -15,19 +15,8 @@ jobs:
       with:
         ref: ${{ github.head_ref }}
 
-    - uses: addnab/docker-run-action@v2
-      with:
-        image: fedora:latest
-        registry: registry.fedoraproject.org
-        # image: fedora:latest
-        run: |
-          pwd
-          ls -l
-          ls -l *
-          sudo dnf -y install black
-          black .
     - name: Install black
-      run: sudo apt update -y && sudo apt upgrade -y && sudo apt -y install python3-black
+      run: sudo apt update -y && sudo apt -y install python3-black
 
     - name: Version
       run: python --version ; black --version
