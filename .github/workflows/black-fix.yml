@@ -19,7 +19,7 @@ jobs:
       run: |
         sudo apt update -y
         sudo apt -y install python3-pip
-        pip install black
+        pip3 install black
 
     - name: Version
       run: python --version ; black --version
