@@ -26,6 +26,7 @@ jobs:
         python3 --version
         black --version || :
         black3 --version || :
+        ls $HOME/.local/bin
 
     - name: Run black
       run: |
