@@ -9,9 +9,6 @@ on:
 jobs:
   black:
     runs-on: ubuntu-latest
-    using: 'docker'
-    registry: registry.fedoraproject.org
-    image: fedora:latest
 
     steps:
     - uses: actions/checkout@v2
@@ -21,6 +18,8 @@ jobs:
     - uses: addnab/docker-run-action@v2
       with:
         image: fedora:latest
+        registry: registry.fedoraproject.org
+        # image: fedora:latest
         run: |
           sudo dnf -y install black
           black .
