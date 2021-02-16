@@ -7,16 +7,19 @@ on:
       - "test"
 
 jobs:
-  php-cs-fixer:
-    runs-on: ubuntu-latest
+  black:
+    runs-on: docker://registry.fedoraproject.org/fedora:latest
 
     steps:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.head_ref }}
-    # This also installs git-clang-format
-    - name: Install clang-format
+
+    - name: Install black
       run: sudo apt update -y && sudo apt upgrade -y && sudo apt -y install python3-black
+
+    - name: Version
+      run: python --version ; black --version
 
     - name: Run black
       run: black tests/ tools/
