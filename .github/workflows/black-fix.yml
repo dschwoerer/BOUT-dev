@@ -8,13 +8,22 @@ on:
 
 jobs:
   black:
-    runs-on: docker://registry.fedoraproject.org/fedora:latest
+    runs-on: ubuntu-latest
+    using: 'docker'
+    image: fedora:latest
 
     steps:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.head_ref }}
 
+    - uses: addnab/docker-run-action@v2
+      with:
+	registry: registry.fedoraproject.org
+	image: fedora:latest
+	run: |
+	  sudo dnf -y install black
+	  black .
     - name: Install black
       run: sudo apt update -y && sudo apt upgrade -y && sudo apt -y install python3-black
 
