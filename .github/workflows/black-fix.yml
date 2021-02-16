@@ -22,6 +22,9 @@ jobs:
         # image: fedora:latest
         run: |
           sudo dnf -y install black
+          pwd
+          ls -l
+          ls -l *
           black .
     - name: Install black
       run: sudo apt update -y && sudo apt upgrade -y && sudo apt -y install python3-black
