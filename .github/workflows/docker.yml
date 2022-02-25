@@ -22,7 +22,5 @@ jobs:
           push: true
           build-args: |
             version=${{ steps.tag.outputs.tag }}
-          tags: |
-#            ${{ env.USER }}/${{ env.IMAGE_NAME }}:${{ env.GITHUB_SHA }}
-            ${{ env.USER }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.USER }}/${{ env.IMAGE_NAME }}:latest
 
