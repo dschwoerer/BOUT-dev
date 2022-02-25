@@ -26,8 +26,9 @@ jobs:
     steps:
       - name: Debug infos
         run: |
-          echo ${{ env.GITHUB_SHA }}
-          echo ${{ env.GITHUB_SHA }}
+          echo ${{ github.sha }}
+          echo ${{ github.base_ref }}
+          echo ${{ github.base.ref }}
 
       - uses: docker/login-action@v1
         with:
