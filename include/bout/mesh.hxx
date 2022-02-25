@@ -560,8 +560,6 @@ class Mesh {
 
   /// Get all the parallel (Y) boundaries on this processor 
   virtual std::vector<BoundaryRegionPar*> getBoundariesPar() = 0;
-  virtual std::vector<BoundaryRegionPar*> getBoundariesParInner() = 0;
-  virtual std::vector<BoundaryRegionPar*> getBoundariesParOuter() = 0;
 
   /// Add a parallel(Y) boundary to this processor 
   virtual void addBoundaryPar(BoundaryRegionPar* UNUSED(bndry)) {}
