@@ -27,8 +27,8 @@ jobs:
       - name: Debug infos
         run: |
           echo ${{ github.sha }}
-          echo ${{ github.base_ref }}
-          echo ${{ github.base.ref }}
+          echo ${{ github.ref_name }}
+          echo ${{ github.ref.name }}
 
       - uses: docker/login-action@v1
         with:
