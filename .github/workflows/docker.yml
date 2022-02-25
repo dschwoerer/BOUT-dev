@@ -39,9 +39,10 @@ jobs:
         with:
           push: true
           build-args: |
-            version=${{ steps.tag.outputs.tag }}
             MPI=mpich
-            COMMIT=${{ env.GITHUB_SHA }}
+            COMMIT=${{ github.sha }}
             CMAKE_OPTIONS=${{ matrix.config.options }}
-          tags: ${{ env.USER }}/${{ env.IMAGE_NAME }}:latest-${{ matrix.config.tag_postfix }}
+          tags: |
+            ${{ env.USER }}/${{ env.IMAGE_NAME }}:latest-${{ matrix.config.tag_postfix }}
+            ${{ env.USER }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-${{ matrix.config.tag_postfix }}
 
