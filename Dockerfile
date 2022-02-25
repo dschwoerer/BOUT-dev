@@ -42,7 +42,7 @@ ARG COMMIT=next
 
 # Checkout submodules now so configure later is fast, and iterating on
 # it less painful
-RUN git clone https://github.com/boutproject/BOUT-dev.git \
+RUN git clone https://github.com/dschwoerer/BOUT-dev.git \
  && chown -R boutuser /home/boutuser/BOUT-dev \
  && cd BOUT-dev \
  && git checkout $COMMIT \
