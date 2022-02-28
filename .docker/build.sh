@@ -1,9 +1,9 @@
 set -ex
 
-if which podman &> /dev/null ; then
-    cmd="time podman"
-else
+if which docker &> /dev/null ; then
     cmd="time sudo docker"
+else
+    cmd="time podman"
 fi
 
 file=$1
