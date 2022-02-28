@@ -10,8 +10,6 @@ RUN mkdir /opt/bout++ && chown boutuser /opt/bout++
 USER boutuser
 WORKDIR /home/boutuser
 
-ARG COMMIT=next
-
 # Checkout submodules now so configure later is fast, and iterating on
 # it less painful
 RUN git clone https://github.com/dschwoerer/BOUT-dev.git \
@@ -23,19 +21,17 @@ RUN git clone https://github.com/dschwoerer/BOUT-dev.git \
 
 WORKDIR /home/boutuser/BOUT-dev
 
-ARG CMAKE_OPTIONS
-
-ENV MPI_BIN=/usr/lib64/$MPI/bin
-ENV MPI_SYSCONFIG=/etc/$MPI-x86_64
-ENV MPI_FORTRAN_MOD_DIR=/usr/lib64/gfortran/modules/$MPI
-ENV MPI_INCLUDE=/usr/include/$MPI-x86_64
-ENV MPI_LIB=/usr/lib64/$MPI/lib
-ENV MPI_MAN=/usr/share/man/$MPI-x86_64
-ENV MPI_PYTHON_SITEARCH=/usr/lib64/python3.9/site-packages/$MPI
-ENV MPI_PYTHON3_SITEARCH=/usr/lib64/python3.9/site-packages/$MPI
-ENV MPI_COMPILER=$MPI-x86_64
-ENV MPI_SUFFIX=_$MPI
-ENV MPI_HOME=/usr/lib64/$MPI
+ENV MPI_BIN=/usr/lib64/$MPI/bin \
+    MPI_SYSCONFIG=/etc/$MPI-x86_64 \
+    MPI_FORTRAN_MOD_DIR=/usr/lib64/gfortran/modules/$MPI \
+    MPI_INCLUDE=/usr/include/$MPI-x86_64 \
+    MPI_LIB=/usr/lib64/$MPI/lib \
+    MPI_MAN=/usr/share/man/$MPI-x86_64 \
+    MPI_PYTHON_SITEARCH=/usr/lib64/python3.9/site-packages/$MPI \
+    MPI_PYTHON3_SITEARCH=/usr/lib64/python3.9/site-packages/$MPI \
+    MPI_COMPILER=$MPI-x86_64 \
+    MPI_SUFFIX=_$MPI \
+    MPI_HOME=/usr/lib64/$MPI
 
 
 RUN export PATH=\$MPI_BIN:\$PATH LD_LIBRARY_PATH=\$MPI_LIB:\$LD_LIBRARY_PATH \

@@ -15,6 +15,7 @@ then
 else
     cp $file Dockerfile
 fi
+test $REPO || REPO=docker.io
 
 cat Dockerfile
 
