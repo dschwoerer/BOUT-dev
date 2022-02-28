@@ -1,7 +1,5 @@
 cat <<EOF
-FROM docker.io/oi4ai/bout-base:$BASETAG
-
-ARG MPI=mpich
+FROM docker.io/oi4ai/bout-base:openmp-$MPI-mini
 
 # ----------------------------------------------------------------
 # Build and install BOUT++
