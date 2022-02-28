@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mpi: mpich
+        mpi: [mpich]
         config:
           - name: "Debug"
             tag_postfix: "debug"
