@@ -1,4 +1,5 @@
-FROM docker.io/oi4ai/bout-base:openmp-mpich-mini
+cat <<EOF
+FROM docker.io/oi4ai/bout-base:$BASETAG
 
 ARG MPI=mpich
 
@@ -39,8 +40,8 @@ ENV MPI_SUFFIX=_$MPI
 ENV MPI_HOME=/usr/lib64/$MPI
 
 
-RUN export PATH=$MPI_BIN:$PATH LD_LIBRARY_PATH=$MPI_LIB:$LD_LIBRARY_PATH \
- && export PKG_CONFIG_PATH=$MPI_LIB/pkgconfig:$PKG_CONFIG_PATH MANPATH=$MPI_MAN:$MANPATH \
+RUN export PATH=\$MPI_BIN:\$PATH LD_LIBRARY_PATH=\$MPI_LIB:\$LD_LIBRARY_PATH \
+ && export PKG_CONFIG_PATH=\$MPI_LIB/pkgconfig:\$PKG_CONFIG_PATH MANPATH=\$MPI_MAN:\$MANPATH \
  && cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/opt/bout++/ \
           -DBOUT_GENERATE_FIELDOPS=OFF \
           -DBOUT_USE_PETSC=ON -DPETSc_ROOT=/opt/petsc \
@@ -48,9 +49,9 @@ RUN export PATH=$MPI_BIN:$PATH LD_LIBRARY_PATH=$MPI_LIB:$LD_LIBRARY_PATH \
           -DBOUT_USE_SUNDIALS=ON -DSUNDIALS_ROOT=/usr/lib64/$MPI/ -DSUNDIALS_INCLUDE_DIR=/usr/include/$MPI-x86_64/sundials/ \
 	  $CMAKE_OPTIONS || (cat /home/boutuser/BOUT-dev/build/CMakeFiles/CMake{Output,Error}.log  ; exit 1)
 
-#
 
 RUN make -C build -j 2
 RUN make -C build install
 
 RUN find /opt/bout++
+EOF
