@@ -15,7 +15,8 @@ then
 else
     cp $file Dockerfile
 fi
-test $REPO || REPO=docker.io
+
+$cmd login -p $DOCKER_TOKEN -u $DOCKER_USER
 
 cat Dockerfile
 
