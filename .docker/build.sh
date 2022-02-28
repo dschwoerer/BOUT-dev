@@ -16,7 +16,9 @@ else
     cp $file Dockerfile
 fi
 
-$cmd build -t mobydick -f Dockerfile
+cat Dockerfile
+
+$cmd build -t mobydick .
 for tag in $TAGS
 do
     $cmd tag mobydick $REPO/$IMAGE_NAME:$tag
