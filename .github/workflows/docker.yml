@@ -12,15 +12,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mpi: [mpich, openmpi]
+        mpi: mpich
         config:
           - name: "Debug"
-            options: "-DCHECK=3"
             tag_postfix: "debug"
+            options: "-DCHECK=3"
 
           - name: "Optimised"
-            options: "-DCHECK=0"
             tag_postfix: "opt"
+            options: "-DCHECK=0"
     steps:
       - uses: actions/checkout@v2
       - name: Debug infos
@@ -37,6 +37,6 @@ jobs:
           TAGS="${{ env.USER }}/${{ env.IMAGE_NAME }}:latest-${{ matrix.config.tag_postfix }} \
                 ${{ env.USER }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-${{ matrix.config.tag_postfix }}" \
           CMAKE_OPTIONS=${{ matrix.config.options }} \
-          MPI=${{ matrix.config.mpi }} \
+          MPI=${{ matrix.mpi }} \
           sh .docker/build.sh
 
