@@ -22,6 +22,6 @@ cat Dockerfile
 $cmd build -t mobydick .
 for tag in $TAGS
 do
-    $cmd tag mobydick $REPO/$IMAGE_NAME:$tag
-    $cmd push $REPO/$IMAGE_NAME:$tag
+    $cmd tag mobydick $tag
+    $cmd push $tag
 done
