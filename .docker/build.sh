@@ -7,7 +7,7 @@ else
 fi
 
 file=$1
-test -f $file || file=.docker/fedora/Dockerfile.sh
+(test $file && test -f $file) || file=.docker/fedora/Dockerfile.sh
 test $# -gt 0 && shift
 if test -e $file
 then
