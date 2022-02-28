@@ -8,7 +8,7 @@ fi
 
 file=$1
 test -f $file || file=.docker/fedora/Dockerfile.sh
-shift
+test $# -gt 0 && shift
 if test -e $file
 then
     COMMIT=$(git rev-parse HEAD) bash $file $@ > Dockerfile
