@@ -51,6 +51,7 @@
 #include "bout_types.hxx"
 #include "bout/assert.hxx"
 #include "bout/openmpwrap.hxx"
+class BoutMask;
 
 /// The MAXREGIONBLOCKSIZE value can be tuned to try to optimise
 /// performance on specific hardware. It determines what the largest
@@ -549,6 +550,18 @@ public:
     indices = getRegionIndices();
   };
 
+  bool operator==(const Region<T>& other) {
+    if (this->size() != other.size()) {
+      return false;
+    }
+    for (auto i1 = this->begin(), i2 = other.begin(); i1 != this->end(); ++i1, ++i2) {
+      if (i1 != i2) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /// Destructor
   ~Region() = default;
 
@@ -646,8 +659,29 @@ public:
     return *this; // To allow command chaining
   };
 
-  /// Returns a new region including only indices contained in both
-  /// this region and the other.
+  /// Return a new region equivalent to *this but with indices contained
+  /// in mask Region removed
+  Region<T> mask(const BoutMask& mask) {
+    // Get the current set of indices that we're going to mask and then
+    // use to create the result region.
+    auto currentIndices = getIndices();
+
+    // Lambda that returns true/false depending if the passed value is in maskIndices
+    // With C++14 T can be auto instead
+    auto isInVector = [&](T val) { return mask[val]; };
+
+    // Erase elements of currentIndices that are in maskIndices
+    currentIndices.erase(
+        std::remove_if(std::begin(currentIndices), std::end(currentIndices), isInVector),
+        std::end(currentIndices));
+
+    // Update indices
+    setIndices(currentIndices);
+
+    return *this; // To allow command chaining
+  };
+
+  /// Returns a modified region including only indices that are also in the region.
   Region<T> getIntersection(const Region<T>& otherRegion) {
     // Get other indices and sort as we're going to be searching through
     // this vector so if it's sorted we can be more efficient
