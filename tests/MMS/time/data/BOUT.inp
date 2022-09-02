@@ -8,6 +8,9 @@ MYG = 1
 
 MZ = 1
 
+[input]
+error_on_unused_options = false
+
 [output]
 floats = false
 
@@ -22,6 +25,5 @@ adaptive = false
 mms = true
 
 [f]
-
 solution = exp(t)
 source = 0
