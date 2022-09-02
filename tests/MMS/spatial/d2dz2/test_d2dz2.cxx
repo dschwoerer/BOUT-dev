@@ -13,8 +13,8 @@ int main(int argc, char** argv) {
 
   BoutInitialise(argc, argv);
   
-  Field3D input = FieldFactory::get()->create3D("input", Options::getRoot(), mesh);
-  Field3D solution = FieldFactory::get()->create3D("solution", Options::getRoot(), mesh);
+  Field3D input = FieldFactory::get()->create3D("f:input", Options::getRoot(), mesh);
+  Field3D solution = FieldFactory::get()->create3D("f:solution", Options::getRoot(), mesh);
   
   Field3D result = D2DZ2(input);
 

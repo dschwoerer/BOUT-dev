@@ -32,14 +32,14 @@ int main(int argc, char **argv) {
   
   FieldFactory fact(mesh);
 
-  std::shared_ptr<FieldGenerator> gen = fact.parse("input");
+  std::shared_ptr<FieldGenerator> gen = fact.parse("f:input");
   output << "GEN = " << gen->str() << endl;
 
-  Field3D input = fact.create3D("input");
+  Field3D input = fact.create3D("f:input");
   
   Field3D result = lap->solve(input);
   
-  Field3D solution = fact.create3D("solution");
+  Field3D solution = fact.create3D("f:solution");
 
   Field3D error = result - solution;
 

@@ -3,6 +3,7 @@ MZ = 32
 MYG = 1
 MXG = 1
 
+[f]
 
 solution = sin(pi*x)
 input = -pi^2*sin(pi*x)
