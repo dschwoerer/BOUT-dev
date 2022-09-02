@@ -73,18 +73,15 @@ Dx = 1
 Dy = -1 # No Y conduction
 Dz = -1 # No Z conduction
 
-[all]
-scale = 1.0
-
-[n]
+[N]
 scale = 0.0
 function = 0  # Initial condition
 
 solution = 0.9*x + 0.2*sin(5.0*x^2) + 0.9
 
-ddx = 2.0*x*cos(5.0*x^2) + 0.9
+# ddx = 2.0*x*cos(5.0*x^2) + 0.9
 
-ddy = 0
+# ddy = 0
 
 source = 20.0*x^2*sin(5.0*x^2) - 2.0*cos(5.0*x^2)
 
