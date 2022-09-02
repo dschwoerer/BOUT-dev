@@ -73,9 +73,6 @@ Dx = 1
 Dy = 1 # No Y conduction
 Dz = 1 # No Z conduction
 
-[all]
-scale = 1.0
-
 [N]
 
 xl = x * mesh:Lx           # In the range [0,Lx]

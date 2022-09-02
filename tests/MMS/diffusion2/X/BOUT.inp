@@ -72,9 +72,6 @@ Dx = 1
 Dy = -1 # No Y conduction
 Dz = -1 # No Z conduction
 
-[all]
-scale = 1.0
-
 [N]
 xl = x * mesh:Lx           # In the range [0,Lx]
 yl = y * mesh:Ly 			  # In the range [0,Ly]
@@ -83,7 +80,7 @@ solution = 0.9*N:xl + 0.2*sin(5.0*N:xl^2 - 2*z) + sin(7*N:yl + 1.234)*cos(N:yl)*
 
 ddx = 2.0*N:xl*cos(5.0*N:xl^2 - 2*z) + 0.9
 
-ddy = -sin(N:yl)*sin(7*N:yl + 1.234)*cos(10*z) + 7*cos(N:yl)*cos(10*z)*cos(7*N:yl + 1.234)
+# ddy = -sin(N:yl)*sin(7*N:yl + 1.234)*cos(10*z) + 7*cos(N:yl)*cos(10*z)*cos(7*N:yl + 1.234)
 
 source = 20.0*N:xl^2*sin(5.0*N:xl^2 - 2*z) - 2.0*cos(5.0*N:xl^2 - 2*z)
 
