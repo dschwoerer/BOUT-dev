@@ -53,6 +53,9 @@ protected:
     coords->g_23 = 0.0;
     coords->geometry();
 
+    Options::root()["N:ddx"].setConditionallyUsed();
+    Options::root()["N:ddy"].setConditionallyUsed();
+
     // Tell BOUT++ to solve N
     SOLVE_FOR(N);
 
