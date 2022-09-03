@@ -23,12 +23,14 @@ from os.path import join
 
 build_and_log("MMS diffusion test")
 
+nproc = 2
+
 # List of input directories
 inputs = [
-    ("X", ["mesh:nx"]),
-    ("Y", ["mesh:ny"]),
-    ("Z", ["MZ"])  # ,
-    # ("XYZ", ["mesh:nx", "mesh:ny", "MZ"])
+    ("X", ["mesh:nx"], nproc),
+    ("Y", ["mesh:ny"], nproc),
+    ("Z", ["MZ"], 1)  # ,
+    # ("XYZ", ["mesh:nx", "mesh:ny", "MZ"], nproc)
 ]
 
 # List of NX values to use
@@ -39,11 +41,9 @@ nout = 1
 # timestep = 0.1
 timestep = 0.1
 
-nproc = 2
-
 success = True
 
-for dir, sizes in inputs:
+for dir, sizes, nproc in inputs:
     print("Running test in '%s'" % (dir))
 
     error_2 = []  # The L2 error (RMS)
