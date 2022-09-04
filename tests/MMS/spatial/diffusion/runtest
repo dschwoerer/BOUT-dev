@@ -33,7 +33,7 @@ inputs = [
 ]
 
 # List of NX values to use
-nxlist = [8, 16, 32, 64, 128, 256, 512, 1024]
+nxlist = [8, 16, 32, 64, 128] #, 256, 512, 1024]
 
 nout = 1
 

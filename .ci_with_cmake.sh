@@ -6,7 +6,7 @@ cmake --version
 cmake . -B build $@ -DCMAKE_INSTALL_PREFIX=$(pwd)/installed
 cmake --build build --target build-check -j 2
 cd build
-ctest --output-on-failure --timeout 600
+ctest --output-on-failure --timeout 300
 if [[ "$@" == *"-DBOUT_BUILD_EXAMPLES=ON"* ]]; then
   make build-all-examples
 fi
