@@ -54,6 +54,26 @@ jobs:
                             -DSUNDIALS_ROOT=/home/runner/local"
             omp_num_threads: 2
 
+          - name: "CMake, minimal"
+            os: ubuntu-20.04
+            cmake_options: "-DBUILD_SHARED_LIBS=ON
+                            -DBOUT_ENABLE_OPENMP=OFF
+                            -DBOUT_USE_PETSC=OFF
+                            -DBOUT_USE_SLEPC=OFF
+                            -DBOUT_USE_SUNDIALS=OFF
+                            -DBOUT_ENABLE_PYTHON=ON
+                            -DBOUT_BUILD_EXAMPLES=ON
+                            -DBOUT_BUILD_DOCS=ON
+                            -DBOUT_ENABLE_SIGFPE=OFF
+                            -DBOUT_ENABLE_MPI=ON
+                            -DBOUT_ENABLE_MSGSTACK=OFF
+                            -DBOUT_ENABLE_SIGNAL=OFF
+                            -DBOUT_ENABLE_TRACK=OFF
+                            -DBOUT_ENABLE_WARNINGS=OFF
+                            -DBOUT_RUN_ALL_TESTS=ON"
+            omp_num_threads: 2
+
+
     steps:
       - name: Job information
         run: |
