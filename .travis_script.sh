@@ -53,6 +53,21 @@ do
     esac
 done
 
+if test $GITHUB_EVENT_NAME == pull ; then
+    echo ; echo ; echo ; echo ; echo ; echo ; echo ; echo ; echo
+    env
+    echo ; echo ; echo ; echo ; echo ; echo ; echo ; echo ; echo
+    git status
+    echo ; echo ; echo ; echo ; echo ; echo ; echo ; echo ; echo
+    git log | head -n 100
+    echo ; echo ; echo ; echo ; echo ; echo ; echo ; echo ; echo
+    git remote -v
+    echo ; echo ; echo ; echo ; echo ; echo ; echo ; echo ; echo
+    exit 1
+fi
+env
+exit 0
+
 ./.build_sundials_for_travis.sh
 
 if test $UPDATE_SCRIPT -gt 0
