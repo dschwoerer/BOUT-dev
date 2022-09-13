@@ -36,9 +36,9 @@ int main(int argc, char **argv) {
   output << "GEN = " << gen->str() << endl;
 
   Field3D input = fact.create3D("input");
-  
+
   Field3D result = lap->solve(input);
-  
+
   Field3D solution = fact.create3D("solution");
 
   Field3D error = result - solution;

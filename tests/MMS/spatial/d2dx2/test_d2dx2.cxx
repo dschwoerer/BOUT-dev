@@ -12,7 +12,7 @@ using bout::globals::dump;
 int main(int argc, char** argv) {
 
   BoutInitialise(argc, argv);
-  
+
   Field3D input = FieldFactory::get()->create3D("input", Options::getRoot(), mesh);
   Field3D solution = FieldFactory::get()->create3D("solution", Options::getRoot(), mesh);
   // At this point the boundary cells are set to the analytic solution
