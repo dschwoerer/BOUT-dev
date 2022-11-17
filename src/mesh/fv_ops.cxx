@@ -8,43 +8,35 @@
 
 namespace FV {
 
-// Div ( a Grad_perp(f) ) -- ∇⊥ ( a ⋅ ∇⊥ f) --  Vorticity
-Field3D Div_a_Grad_perp(const Field3D& a, const Field3D& f) {
-  ASSERT2(a.getLocation() == f.getLocation());
+  // Div ( a Grad_perp(f) ) -- ∇⊥ ( a ⋅ ∇⊥ f) --  Vorticity
+  Field3D Div_a_Grad_perp(const Field3D& a, const Field3D& f) {
+    ASSERT2(a.getLocation() == f.getLocation());
 
-  Mesh* mesh = a.getMesh();
+    Mesh* mesh = a.getMesh();
 
-  Field3D result{zeroFrom(f)};
+    Field3D result{zeroFrom(f)};
 
-  Coordinates* coord = f.getCoordinates();
+    Coordinates* coord = f.getCoordinates();
 
-  // Flux in x
+    // Flux in x
 
-  int xs = mesh->xstart - 1;
-  int xe = mesh->xend;
+    int xs = mesh->xstart - 1;
+    int xe = mesh->xend;
 
-  /*
-    if(mesh->firstX())
-    xs += 1;
-  */
-  /*
-    if(mesh->lastX())
-    xe -= 1;
-  */
+    for (int i = xs; i <= xe; i++) {
+      for (int j = mesh->ystart; j <= mesh->yend; j++) {
+	for (int k = 0; k < mesh->LocalNz; k++) {
+	  // Calculate flux from i to i+1
 
-  for (int i = xs; i <= xe; i++) {
-    for (int j = mesh->ystart; j <= mesh->yend; j++) {
-      for (int k = 0; k < mesh->LocalNz; k++) {
-        // Calculate flux from i to i+1
+	  BoutReal fout = 0.5 * (a(i, j, k) + a(i + 1, j, k))
+                          * (coord->J(i, j, k) * coord->g11(i, j, k)
+                             + coord->J(i + 1, j, k) * coord->g11(i + 1, j, k))
+                          * (f(i + 1, j, k) - f(i, j, k))
+                          / (coord->dx(i, j, k) + coord->dx(i + 1, j, k));
 
-        BoutReal fout = 0.5 * (a(i, j, k) + a(i + 1, j, k))
-                        * (coord->J(i, j, k) * coord->g11(i, j, k)
-                           + coord->J(i + 1, j, k) * coord->g11(i + 1, j, k))
-                        * (f(i + 1, j, k) - f(i, j, k))
-                        / (coord->dx(i, j, k) + coord->dx(i + 1, j, k));
-
-        result(i, j, k) += fout / (coord->dx(i, j, k) * coord->J(i, j, k));
-        result(i + 1, j, k) -= fout / (coord->dx(i + 1, j, k) * coord->J(i + 1, j, k));
+	  result(i, j, k) += fout / (coord->dx(i, j, k) * coord->J(i, j, k));
+	  result(i + 1, j, k) -= fout / (coord->dx(i + 1, j, k) * coord->J(i + 1, j, k));
+	}
       }
     }
 
