@@ -23,9 +23,6 @@
 #
 # Taken from https://github.com/jedbrown/cmake-modules/blob/master/FindPETSc.cmake
 
-cmake_policy(VERSION 3.3)
-cmake_policy(SET CMP0074 NEW)
-
 find_package(MPI REQUIRED)
 
 set(PETSC_VALID_COMPONENTS
@@ -381,7 +378,7 @@ mark_as_advanced (PETSC_INCLUDES PETSC_LIBRARIES PETSC_COMPILER PETSC_DEFINITION
 
 include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args (PETSc
-  REQUIRED_VARS PETSC_INCLUDES PETSC_LIBRARIES PETSC_EXECUTABLE_RUNS
+  REQUIRED_VARS PETSC_INCLUDES PETSC_LIBRARIES
   VERSION_VAR PETSC_VERSION
   FAIL_MESSAGE "PETSc could not be found.  Be sure to set PETSC_DIR and PETSC_ARCH.")
 
