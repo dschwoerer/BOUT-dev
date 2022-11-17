@@ -7,6 +7,7 @@ int main(int argc, char** argv) {
 
   using bout::globals::mesh;
 
+  Options dump;
   std::vector<Field3D> fields;
   fields.resize(static_cast<int>(BoundaryParType::SIZE));
   for (int i=0; i< fields.size(); i++){
@@ -20,10 +21,10 @@ int main(int argc, char** argv) {
       }
     }
     output.write("{:s} done\n", toString(static_cast<BoundaryParType>(i)));
-    bout::globals::dump.addOnce(fields[i], fmt::format("field_{:s}", toString(static_cast<BoundaryParType>(i))));
+    dump[fmt::format("field_{:s}", toString(static_cast<BoundaryParType>(i)))] = fields[i];
   }
-  
-  bout::globals::dump.write();
+
+  bout::writeDefaultOutputFile(dump);
 
   BoutFinalise();
 }
