@@ -16,6 +16,9 @@ endmacro()
 
 bout_python_maybe_error(BUILD_SHARED_LIBS "BOUT++ shared library")
 
+find_package(Python3 3.6 COMPONENTS Interpreter Development)
+bout_python_maybe_error(${Python3_FOUND} python3)
+
 find_package(Numpy)
 bout_python_maybe_error(${Numpy_FOUND} Numpy)
 
