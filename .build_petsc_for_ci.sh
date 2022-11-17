@@ -10,6 +10,7 @@ if test $BUILD_PETSC ; then
 
 	git clone -b release https://gitlab.com/petsc/petsc.git petsc --depth=1
 
+	pushd petsc
 	./configure \
 	    --with-mpi=yes \
 	    --with-precision=double \
@@ -20,6 +21,7 @@ if test $BUILD_PETSC ; then
 	    --prefix=$HOME/local/petsc
 
 	make && make install
+	popd
 
 	echo "****************************************"
 	echo " Finished building PETSc"
