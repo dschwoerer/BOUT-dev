@@ -10,6 +10,9 @@ if test $BUILD_PETSC ; then
 
 	git clone -b release https://gitlab.com/petsc/petsc.git petsc --depth=1
 
+	export PETSC_DIR=
+	export PETSC_ARCH=
+
 	pushd petsc
 	./configure \
 	    --with-mpi=yes \
