@@ -35,10 +35,10 @@
 
 #include "msg_stack.hxx"
 #include "unused.hxx"
-#include "bout/region.hxx"
 #include "bout/array.hxx"
 #include "bout/assert.hxx"
 #include "bout/build_config.hxx"
+#include "bout/region.hxx"
 
 #include <algorithm>
 #include <cmath>
