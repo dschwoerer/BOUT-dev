@@ -68,6 +68,46 @@ def totype(s):
     return f"Temporary{s}"
 
 
+class Todo2:
+    def __init__(self, a, ob, b):
+        self.a = a
+        self.op = op
+        self.b = b
+
+    def __hash__(self):
+        return hash(repr(self))
+
+    def __repr__(self):
+        return str((self.a, self.op, self.b))
+
+    def __lt__(self, rhs):
+        return (self.a, self.op, self.b) < (rhs.a, rhs.op, rhs.b)
+
+    def print(self):
+        la = mylen(self.a)
+        lb = mylen(self.b)
+        ca = clean(self.a)
+        cb = clean(self.b)
+        op = names[self.op]
+        iop = self.op
+        operator = f"operator{op}(const {totype(ca)}& lhs, const {totype(cb)}& rhs)"
+        if min(la, lb) + 1 <= maxlen:
+            if mylen(self.a) >= mylen(self.b):
+                return f"""inline {totype(clean('F3D' + iop + self.b))} {operator} {{
+  return static_cast<Field3D>(lhs) {op} rhs;
+}}
+"""
+            return f"""inline {totype(clean(self.a + iop + 'F3D'))} {operator} {{
+  return lhs {op} static_cast<Field3D>(rhs);
+}}
+"""
+        return f"""\
+inline {totype('F3D' + iop + 'F3D')} {operator} {{
+  return static_cast<Field3D>(lhs) {op} static_cast<Field3D>(rhs);
+}}
+"""
+
+
 class Todo:
     def __init__(self, a, ob, b, ret):
         self.a = a
@@ -146,6 +186,7 @@ class ItemSet:
 
 
 todos = ItemSet()
+todos2 = ItemSet()
 
 
 def printp1(p):
@@ -231,7 +272,7 @@ def printpas2(p, assign=False):
 
 
 for i in range(maxlen):
-    #posesc = [x if x in pure else f"l{x}r" for x in pos]
+    # posesc = [x if x in pure else f"l{x}r" for x in pos]
     posesc = [x if x in pure else f"l{x}r" for x in pos if mylen(x) < maxlen]
 
     for a, b in tqdm.contrib.itertools.product(
@@ -243,11 +284,15 @@ for i in range(maxlen):
                 ret = f"{a}{op}{b}"
                 pos.add(clean(ret))
                 todos.add(Todo(a, op, b, ret))
+        else:
+            for op in names:
+                todos2.add(Todo2(a, op, b))
 # print(pos)
 # [tosympy(s) for s in pos]
 # print(len(pos))
 pos = sorted(pos)
 todos = sorted(todos)
+todos2 = sorted(todos2)
 # print(todos)
 
 realopen = open
@@ -280,25 +325,27 @@ with open(f"generated_fieldops_merged_declare_{maxlen}.hxx", "w") as f:
             continue
         f.write(printp1(p))
 
-    for todo in tqdm.tqdm(todos, desc="Calclulating Todos   [1/4]", unit="op"):
+    for todo in tqdm.tqdm(todos, desc="Calclulating Todos   [1/5]", unit="op"):
         f.write(todo.print1())
 
 with open(f"generated_fieldops_merged_implement_{maxlen}.hxx", "w") as f:
 
-    for p in tqdm.tqdm(pos, desc="implement ops        [2/4]", unit="op"):
+    for p in tqdm.tqdm(pos, desc="implement ops        [2/5]", unit="op"):
         if p in pure:
             continue
         f.write(printp2(p))
 
-    for p in tqdm.tqdm(pos, desc="implement update ops [3/4]", unit="op"):
+    for p in tqdm.tqdm(pos, desc="implement update ops [3/5]", unit="op"):
         if p in pure:
             continue
         for op in ops:
             f.write(printpas2(p, op))
 
-    for todo in tqdm.tqdm(todos, desc="Writing Todos        [4/4]", unit="op"):
+    for todo in tqdm.tqdm(todos, desc="Writing Todos        [4/5]", unit="op"):
         f.write(todo.print())
 
+    for todo in tqdm.tqdm(todos2, desc="Writing Todos2       [5/5]", unit="op"):
+        f.write(todo.print())
 
     for op in ops:
         f.write(
