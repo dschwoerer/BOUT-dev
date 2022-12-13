@@ -193,19 +193,19 @@ def printpas1(p, assign=False):
 
 def printpas2(p, assign=False):
     ret = ""
-    ret += f"  inline Field3D& Field3D::operator{assign}=(const {totype(p)}& rhs) {{\n"
-    ret += "    if (data.unique()) {\n"
-    ret += "      // Delete existing parallel slices. We don't copy parallel slices, so any\n"
-    ret += "      // that currently exist will be incorrect.\n"
-    ret += "      clearParallelSlices();\n\n"
-    ret += "      checkData(*this);\n"
+    ret += f"inline Field3D& Field3D::operator{assign}=(const {totype(p)}& rhs) {{\n"
+    ret += "  if (data.unique()) {\n"
+    ret += "    // Delete existing parallel slices. We don't copy parallel slices, so any\n"
+    ret += "    // that currently exist will be incorrect.\n"
+    ret += "    clearParallelSlices();\n\n"
+    ret += "    checkData(*this);\n"
 
     for i in range(mylen(p)):
-        ret += f"      ASSERT1_FIELDS_COMPATIBLE(rhs.x0, rhs.x{i});\n"
+        ret += f"    ASSERT1_FIELDS_COMPATIBLE(rhs.x0, rhs.x{i});\n"
     # todo set region
-    ret += '      BOUT_FOR(i, getRegion("RGN_ALL")) {\n'
+    ret += '    BOUT_FOR(i, getRegion("RGN_ALL")) {\n'
     ret += (
-        f"        (*this)[i] {assign}= "
+        f"      (*this)[i] {assign}= "
         + re.sub("(x\\d+)", "rhs.\\1[i]", str(tosympy(p)[0]))
         + ";\n"
     )
