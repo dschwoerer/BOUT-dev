@@ -1101,7 +1101,7 @@ int Coordinates::geometry(bool recalculate_staggered,
   G3_23 = 0.5 * g13 * (DDZ(g_12) + DDY(g_13) - DDX(g_23)) + 0.5 * g23 * DDZ(g_22)
           + 0.5 * g33 * DDY(g_33);
 
-  auto tmp = J * g12;
+  FieldMetric tmp = J * g12;
   communicate(tmp);
   G1 = (DDX(J * g11) + DDY(tmp) + DDZ(J * g13)) / J;
   tmp = J * g22;
@@ -1406,7 +1406,7 @@ int Coordinates::jacobian() {
   const bool extrapolate_x = not localmesh->sourceHasXBoundaryGuards();
   const bool extrapolate_y = not localmesh->sourceHasYBoundaryGuards();
 
-  auto g = g11 * g22 * g33 + 2.0 * g12 * g13 * g23 - g11 * g23 * g23 - g22 * g13 * g13
+  FieldMetric g = g11 * g22 * g33 + 2.0 * g12 * g13 * g23 - g11 * g23 * g23 - g22 * g13 * g13
            - g33 * g12 * g12;
 
   // Check that g is positive
@@ -1683,7 +1683,7 @@ Coordinates::FieldMetric Coordinates::Grad2_par2(const Field2D& f, CELL_LOC outl
   TRACE("Coordinates::Grad2_par2( Field2D )");
   ASSERT1(location == outloc || (outloc == CELL_DEFAULT && location == f.getLocation()));
 
-  auto invSg = 1.0 / sqrt(g_22);
+  FieldMetric invSg = 1.0 / sqrt(g_22);
   // Communicate to get parallel slices
   localmesh->communicate(invSg);
   auto result = DDY(invSg, outloc, method) * DDY(f, outloc, method) * invSg

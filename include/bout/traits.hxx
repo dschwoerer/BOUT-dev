@@ -7,6 +7,7 @@ class Field;
 class Field2D;
 class Field3D;
 class FieldPerp;
+class TemporaryOpF3D;
 class Options;
 
 namespace bout {
@@ -71,6 +72,12 @@ using is_FieldPerp = std::is_base_of<FieldPerp, T>;
 /// `value` equal to `true`. Otherwise `value is `false`.
 template <class T>
 using is_Options = std::is_base_of<Options, T>;
+
+/// If `T` is derived from `TemporaryOpF3D`, provides the member constant
+/// `value` equal to `true`. Otherwise `value is `false`.
+template <class T>
+using is_TemporaryOpF3D = std::is_base_of<TemporaryOpF3D, T>;
+
 
 /// Enable a function if all the Ts are subclasses of `Field`, and
 /// returns the common type: i.e. `Field3D` if at least one argument

@@ -42,6 +42,21 @@ class Mesh;  // #include "bout/mesh.hxx"
 
 #include <vector>
 
+#define BOUT_USE_ADVANCED_FIELDOPS 2
+
+#if BOUT_USE_ADVANCED_FIELDOPS == 2
+#include "bout/generated_fieldops_merged_declare_2.hxx"
+#elif BOUT_USE_ADVANCED_FIELDOPS == 3
+#include "bout/generated_fieldops_merged_declare_3.hxx"
+#elif BOUT_USE_ADVANCED_FIELDOPS == 5
+#include "bout/generated_fieldops_merged_declare_5.hxx"
+#elif BOUT_USE_ADVANCED_FIELDOPS  == 7
+#include "bout/generated_fieldops_merged_declare_7.hxx"
+#else
+#if BOUT_USE_ADVANCED_FIELDOPS != 0
+#error Unexpected Value of BOUT_USE_ADVANCED_FIELDOPS
+#endif
+#endif
 
 /// Class for 3D X-Y-Z scalar fields
 /*!
@@ -482,6 +497,22 @@ class Field3D : public Field {
   void applyParallelBoundary(const std::string &region, const std::string &condition, Field3D *f);
 
   friend void swap(Field3D& first, Field3D& second) noexcept;
+
+
+#if BOUT_USE_ADVANCED_FIELDOPS == 2
+#include "bout/generated_fieldops_merged_field3d_2.hxx"
+#elif BOUT_USE_ADVANCED_FIELDOPS == 3
+#include "bout/generated_fieldops_merged_field3d_3.hxx"
+#elif BOUT_USE_ADVANCED_FIELDOPS == 5
+#include "bout/generated_fieldops_merged_field3d_5.hxx"
+#elif BOUT_USE_ADVANCED_FIELDOPS  == 7
+#include "bout/generated_fieldops_merged_field3d_7.hxx"
+#else
+#if BOUT_USE_ADVANCED_FIELDOPS != 0
+#error Unexpected Value of BOUT_USE_ADVANCED_FIELDOPS
+#endif
+#endif
+
   
 private:
   /// Array sizes (from fieldmesh). These are valid only if fieldmesh is not null
@@ -505,10 +536,12 @@ FieldPerp operator-(const Field3D &lhs, const FieldPerp &rhs);
 FieldPerp operator*(const Field3D &lhs, const FieldPerp &rhs);
 FieldPerp operator/(const Field3D &lhs, const FieldPerp &rhs);
 
+#if BOUT_USE_ADVANCED_FIELDOPS != 0
 Field3D operator+(const Field3D &lhs, const Field3D &rhs);
 Field3D operator-(const Field3D &lhs, const Field3D &rhs);
 Field3D operator*(const Field3D &lhs, const Field3D &rhs);
 Field3D operator/(const Field3D &lhs, const Field3D &rhs);
+#endif
 
 Field3D operator+(const Field3D &lhs, const Field2D &rhs);
 Field3D operator-(const Field3D &lhs, const Field2D &rhs);
@@ -634,5 +667,59 @@ bool operator==(const Field3D &a, const Field3D &b);
 
 /// Output a string describing a Field3D to a stream
 std::ostream& operator<<(std::ostream &out, const Field3D &value);
+
+
+#if BOUT_USE_ADVANCED_FIELDOPS == 2
+#include "bout/generated_fieldops_merged_implement_2.hxx"
+#elif BOUT_USE_ADVANCED_FIELDOPS == 3
+#include "bout/generated_fieldops_merged_implement_3.hxx"
+#elif BOUT_USE_ADVANCED_FIELDOPS == 5
+#include "bout/generated_fieldops_merged_implement_5.hxx"
+#elif BOUT_USE_ADVANCED_FIELDOPS  == 7
+#include "bout/generated_fieldops_merged_implement_7.hxx"
+#else
+#if BOUT_USE_ADVANCED_FIELDOPS != 0
+#error Unexpected Value of BOUT_USE_ADVANCED_FIELDOPS
+#endif
+#endif
+
+#if BOUT_USE_ADVANCED_FIELDOPS
+#define FIELD_FUNC(name, func)                                                       \
+  template<typename T,   \
+	   std::enable_if_t<bout::utils::is_TemporaryOpF3D<T>::value, bool> = true    \
+	   >							     	\
+  inline Field3D name(const T &f, const std::string& rgn = "RGN_ALL") {                    \
+    AUTO_TRACE();                                                                    \
+    return name(static_cast<Field3D>(f), rgn);				\
+  }
+// list from field.hxx
+FIELD_FUNC(sqrt, ::sqrt)
+FIELD_FUNC(abs, ::fabs)
+FIELD_FUNC(exp, ::exp)
+FIELD_FUNC(log, ::log)
+FIELD_FUNC(sin, ::sin)
+FIELD_FUNC(cos, ::cos)
+FIELD_FUNC(tan, ::tan)
+FIELD_FUNC(sinh, ::sinh)
+FIELD_FUNC(cosh, ::cosh)
+FIELD_FUNC(tanh, ::tanh)
+#undef FIELD_FUNC
+
+template <typename T, 
+	   std::enable_if_t<bout::utils::is_TemporaryOpF3D<T>::value, bool> = true
+  >
+inline BoutReal min(const T& f, bool allpe = false,
+                    const std::string& rgn = "RGN_NOBNDRY") {
+  return min(static_cast<Field3D>(f), allpe, rgn);
+}
+
+template <typename T, 
+	   std::enable_if_t<bout::utils::is_TemporaryOpF3D<T>::value, bool> = true
+  >
+inline BoutReal max(const T& f, bool allpe = false,
+                    const std::string& rgn = "RGN_NOBNDRY") {
+  return max(static_cast<Field3D>(f), allpe, rgn);
+}
+#endif // BOUT_USE_ADVANCED_FIELDOPS
 
 #endif /* __FIELD3D_H__ */
