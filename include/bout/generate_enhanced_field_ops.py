@@ -209,6 +209,18 @@ def printpas2(p, assign=False):
         + re.sub("(x\\d+)", "rhs.\\1[i]", str(tosympy(p)[0]))
         + ";\n"
     )
+    ret += "#if CHECK > 2\n"
+    ret += "      if (! finite(result[i])) {\n"
+    ret += (
+        f'        raise BoutException("Non-finite value in expression: {{:e}} {assign}= '
+        + re.sub("(x\\d+)", "{:e}", str(tosympy(p)[0]))
+        + '", (*this)[i], '
+        + ", ".join([f"x{i}[i]" for i in range(mylen(p))])
+        + ");\n"
+    )
+    ret += "#endif"
+    ret += "    }\n"
+
     ret += "      }\n"
     ret += "      checkData(*this);\n"
     ret += "    } else {\n"
