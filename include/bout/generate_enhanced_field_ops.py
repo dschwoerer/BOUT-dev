@@ -22,7 +22,6 @@ def tosympy(s):
     for x in xs:
         s = purere.sub(x, s, count=1)
     s = parse_expr(s)
-    # print(s)
     return s, pt
 
 
@@ -94,7 +93,6 @@ class Todo:
     def print(self):
         ids = [xire.findall(str(s[0])) for s in [self.sa, self.sb, self.sr]]
         ids = [[int(x) for x in y] for y in ids]
-        # ids.append([x + len(ids[0]) for x in ids[1]])
         ret = f"""
 inline {self.ret} operator{self.op}(const {self.a}& lhs, const {self.b}& rhs) {{
   {self.ret} ret;
@@ -169,8 +167,7 @@ def printp2(p):
     for i in range(1, mylen(p)):
         ret += f"  ASSERT1_FIELDS_COMPATIBLE(x0, x{i});\n"
     ret += "  Field3D result{emptyFrom(x0)};\n"
-    # check data
-    # set region
+    # todo: set region
     ret += '  BOUT_FOR(i, result.getRegion("RGN_ALL")) {\n'
     ret += "    result[i] = " + re.sub("(x\\d+)", "\\1[i]", str(tosympy(p)[0])) + ";\n"
     ret += "#if CHECK > 2\n"
@@ -205,8 +202,7 @@ def printpas2(p, assign=False):
 
     for i in range(mylen(p)):
         ret += f"      ASSERT1_FIELDS_COMPATIBLE(rhs.x0, rhs.x{i});\n"
-    # check data
-    # set region
+    # todo set region
     ret += '      BOUT_FOR(i, getRegion("RGN_ALL")) {\n'
     ret += (
         f"        (*this)[i] {assign}= "
@@ -224,9 +220,8 @@ def printpas2(p, assign=False):
 
 
 for i in range(maxlen):
-    posesc = [x if x in pure else f"l{x}r" for x in pos]
+    #posesc = [x if x in pure else f"l{x}r" for x in pos]
     posesc = [x if x in pure else f"l{x}r" for x in pos if mylen(x) < maxlen]
-    print(i, maxlen, len(posesc))
 
     for a, b in tqdm.contrib.itertools.product(
         posesc, posesc, desc=f"Finding ops          [{i+1}/{maxlen}]", unit="op"
@@ -242,8 +237,6 @@ for i in range(maxlen):
 # print(len(pos))
 pos = sorted(pos)
 todos = sorted(todos)
-print(len(pos))
-print(len(todos))
 # print(todos)
 
 realopen = open
@@ -266,6 +259,7 @@ class open:
 
     def write(self, *args):
         self.fd.write(*args)
+
 
 with open(f"generated_fieldops_merged_declare_{maxlen}.hxx", "w") as f:
 
