@@ -52,10 +52,8 @@ class Mesh;  // #include "bout/mesh.hxx"
 #include "bout/generated_fieldops_merged_declare_5.hxx"
 #elif BOUT_USE_ADVANCED_FIELDOPS  == 7
 #include "bout/generated_fieldops_merged_declare_7.hxx"
-#else
-#if BOUT_USE_ADVANCED_FIELDOPS != 0
+#elif BOUT_USE_ADVANCED_FIELDOPS != 0
 #error Unexpected Value of BOUT_USE_ADVANCED_FIELDOPS
-#endif
 #endif
 
 /// Class for 3D X-Y-Z scalar fields
@@ -507,10 +505,8 @@ class Field3D : public Field {
 #include "bout/generated_fieldops_merged_field3d_5.hxx"
 #elif BOUT_USE_ADVANCED_FIELDOPS  == 7
 #include "bout/generated_fieldops_merged_field3d_7.hxx"
-#else
-#if BOUT_USE_ADVANCED_FIELDOPS != 0
+#elif BOUT_USE_ADVANCED_FIELDOPS != 0
 #error Unexpected Value of BOUT_USE_ADVANCED_FIELDOPS
-#endif
 #endif
 
   
@@ -536,7 +532,7 @@ FieldPerp operator-(const Field3D &lhs, const FieldPerp &rhs);
 FieldPerp operator*(const Field3D &lhs, const FieldPerp &rhs);
 FieldPerp operator/(const Field3D &lhs, const FieldPerp &rhs);
 
-#if BOUT_USE_ADVANCED_FIELDOPS != 0
+#if BOUT_USE_ADVANCED_FIELDOPS == 0
 Field3D operator+(const Field3D &lhs, const Field3D &rhs);
 Field3D operator-(const Field3D &lhs, const Field3D &rhs);
 Field3D operator*(const Field3D &lhs, const Field3D &rhs);
@@ -677,10 +673,8 @@ std::ostream& operator<<(std::ostream &out, const Field3D &value);
 #include "bout/generated_fieldops_merged_implement_5.hxx"
 #elif BOUT_USE_ADVANCED_FIELDOPS  == 7
 #include "bout/generated_fieldops_merged_implement_7.hxx"
-#else
-#if BOUT_USE_ADVANCED_FIELDOPS != 0
+#elif BOUT_USE_ADVANCED_FIELDOPS != 0
 #error Unexpected Value of BOUT_USE_ADVANCED_FIELDOPS
-#endif
 #endif
 
 #if BOUT_USE_ADVANCED_FIELDOPS

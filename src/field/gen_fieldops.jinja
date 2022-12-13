@@ -1,5 +1,5 @@
 {% if lhs.field_type == rhs.field_type == "Field3D" %}
-#if BOUT_USE_ADVANCED_FIELDOPS != 0
+#if BOUT_USE_ADVANCED_FIELDOPS == 0
 {% endif %}
 // Provide the C++ wrapper for {{operator_name}} of {{lhs}} and {{rhs}}
 {{out}} operator{{operator}}(const {{lhs.passByReference}}, const {{rhs.passByReference}}) {
@@ -57,7 +57,7 @@
   return {{out.name}};
 }
 {% if lhs.field_type == rhs.field_type == "Field3D" %}
-#if BOUT_USE_ADVANCED_FIELDOPS != 0
+#endif
 {% endif %}
 
 {% if out.field_type == lhs.field_type %}

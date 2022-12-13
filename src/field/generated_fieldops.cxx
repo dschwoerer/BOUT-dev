@@ -6,6 +6,7 @@
 #include <globals.hxx>
 #include <interpolation.hxx>
 
+#if BOUT_USE_ADVANCED_FIELDOPS == 0
 // Provide the C++ wrapper for multiplication of Field3D and Field3D
 Field3D operator*(const Field3D& lhs, const Field3D& rhs) {
   ASSERT1_FIELDS_COMPATIBLE(lhs, rhs);
@@ -21,6 +22,7 @@ Field3D operator*(const Field3D& lhs, const Field3D& rhs) {
   checkData(result);
   return result;
 }
+#endif
 
 // Provide the C++ operator to update Field3D by multiplication with Field3D
 Field3D& Field3D::operator*=(const Field3D& rhs) {
@@ -46,6 +48,7 @@ Field3D& Field3D::operator*=(const Field3D& rhs) {
   return *this;
 }
 
+#if BOUT_USE_ADVANCED_FIELDOPS == 0
 // Provide the C++ wrapper for division of Field3D and Field3D
 Field3D operator/(const Field3D& lhs, const Field3D& rhs) {
   ASSERT1_FIELDS_COMPATIBLE(lhs, rhs);
@@ -61,6 +64,7 @@ Field3D operator/(const Field3D& lhs, const Field3D& rhs) {
   checkData(result);
   return result;
 }
+#endif
 
 // Provide the C++ operator to update Field3D by division with Field3D
 Field3D& Field3D::operator/=(const Field3D& rhs) {
@@ -86,6 +90,7 @@ Field3D& Field3D::operator/=(const Field3D& rhs) {
   return *this;
 }
 
+#if BOUT_USE_ADVANCED_FIELDOPS == 0
 // Provide the C++ wrapper for addition of Field3D and Field3D
 Field3D operator+(const Field3D& lhs, const Field3D& rhs) {
   ASSERT1_FIELDS_COMPATIBLE(lhs, rhs);
@@ -101,6 +106,7 @@ Field3D operator+(const Field3D& lhs, const Field3D& rhs) {
   checkData(result);
   return result;
 }
+#endif
 
 // Provide the C++ operator to update Field3D by addition with Field3D
 Field3D& Field3D::operator+=(const Field3D& rhs) {
@@ -126,6 +132,7 @@ Field3D& Field3D::operator+=(const Field3D& rhs) {
   return *this;
 }
 
+#if BOUT_USE_ADVANCED_FIELDOPS == 0
 // Provide the C++ wrapper for subtraction of Field3D and Field3D
 Field3D operator-(const Field3D& lhs, const Field3D& rhs) {
   ASSERT1_FIELDS_COMPATIBLE(lhs, rhs);
@@ -141,6 +148,7 @@ Field3D operator-(const Field3D& lhs, const Field3D& rhs) {
   checkData(result);
   return result;
 }
+#endif
 
 // Provide the C++ operator to update Field3D by subtraction with Field3D
 Field3D& Field3D::operator-=(const Field3D& rhs) {
