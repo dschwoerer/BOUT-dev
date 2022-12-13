@@ -218,16 +218,15 @@ def printpas2(p, assign=False):
         + ", ".join([f"x{i}[i]" for i in range(mylen(p))])
         + ");\n"
     )
-    ret += "#endif"
-    ret += "    }\n"
-
     ret += "      }\n"
-    ret += "      checkData(*this);\n"
-    ret += "    } else {\n"
-    ret += f"      (*this) = (*this) {assign} rhs;\n"
+    ret += "#endif\n"
     ret += "    }\n"
-    ret += "    return *this;\n"
+    ret += "    checkData(*this);\n"
+    ret += "  } else {\n"
+    ret += f"    (*this) = (*this) {assign} rhs;\n"
     ret += "  }\n"
+    ret += "  return *this;\n"
+    ret += "}\n"
     return ret
 
 
