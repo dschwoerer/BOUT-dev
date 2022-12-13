@@ -1,5 +1,8 @@
+import os
 import re
 import sys
+import random
+import string
 
 import tqdm.contrib.itertools
 
@@ -241,6 +244,27 @@ todos = sorted(todos)
 print(len(pos))
 print(len(todos))
 # print(todos)
+
+realopen = open
+
+
+class open:
+    def __init__(self, fn, op):
+        self.fn = fn
+        self.tmp = "." + "".join(random.choice(string.ascii_letters) for _ in range(10))
+        self.op = op
+
+    def __enter__(self):
+        self.fd = realopen(self.tmp, self.op)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.fd.__exit__(self, exc_type, exc_value, traceback)
+        if exc_type == None:
+            os.rename(self.tmp, self.fn)
+
+    def write(self, *args):
+        self.fd.write(*args)
 
 with open(f"generated_fieldops_merged_declare_{maxlen}.hxx", "w") as f:
 
