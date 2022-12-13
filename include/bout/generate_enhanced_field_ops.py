@@ -1,6 +1,8 @@
 import re
 import sys
 
+import tqdm.contrib.itertools
+
 from sympy import Symbol
 from sympy.parsing.sympy_parser import parse_expr
 
@@ -65,6 +67,16 @@ def totype(s):
 
 class Todo:
     def __init__(self, a, ob, b, ret):
+        self.a = a
+        self.op = op
+        self.b = b
+        self.ret = ret
+
+    def print1(self):
+        a = self.a
+        op = self.op
+        b = self.b
+        ret = self.ret
         self.a = totype(clean(a))
         self.sa = tosympy(a)
         self.op = names[op]
@@ -73,8 +85,6 @@ class Todo:
         self.str = f"{a}{op}{b}"
         self.sr = tosympy(ret)
         self.ret = totype(clean(ret))
-
-    def print1(self):
         return f"inline {self.ret} operator{self.op}(const {self.a}& lhs, const {self.b}& rhs);\n"
 
     def print(self):
@@ -213,14 +223,16 @@ for i in range(maxlen):
     posesc = [x if x in pure else f"l{x}r" for x in pos]
     posesc = [x if x in pure else f"l{x}r" for x in pos if mylen(x) < maxlen]
     print(i, maxlen, len(posesc))
-    for a in posesc:
-        for b in posesc:
-            # if mylen(a) + mylen(b) <= maxlen:
-            if mylen(a + b) <= maxlen:
-                for op in names:
-                    ret = f"{a}{op}{b}"
-                    pos.add(clean(ret))
-                    todos.add(Todo(a, op, b, ret))
+
+    for a, b in tqdm.contrib.itertools.product(
+        posesc, posesc, desc=f"Iteration {i} of {maxlen}", unit="op"
+    ):
+        # if mylen(a) + mylen(b) <= maxlen:
+        if mylen(a + b) <= maxlen:
+            for op in names:
+                ret = f"{a}{op}{b}"
+                pos.add(clean(ret))
+                todos.add(Todo(a, op, b, ret))
 # print(pos)
 # [tosympy(s) for s in pos]
 # print(len(pos))
