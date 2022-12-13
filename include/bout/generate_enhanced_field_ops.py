@@ -4,6 +4,7 @@ import sys
 import random
 import string
 
+import tqdm
 import tqdm.contrib.itertools
 
 from sympy import Symbol
@@ -228,7 +229,7 @@ for i in range(maxlen):
     print(i, maxlen, len(posesc))
 
     for a, b in tqdm.contrib.itertools.product(
-        posesc, posesc, desc=f"Iteration {i} of {maxlen}", unit="op"
+        posesc, posesc, desc=f"Finding ops          [{i+1}/{maxlen}]", unit="op"
     ):
         # if mylen(a) + mylen(b) <= maxlen:
         if mylen(a + b) <= maxlen:
@@ -274,23 +275,23 @@ with open(f"generated_fieldops_merged_declare_{maxlen}.hxx", "w") as f:
             continue
         f.write(printp1(p))
 
-    for todo in todos:
+    for todo in tqdm.tqdm(todos, desc="Calclulating Todos   [1/4]", unit="op"):
         f.write(todo.print1())
 
 with open(f"generated_fieldops_merged_implement_{maxlen}.hxx", "w") as f:
 
-    for p in pos:
+    for p in tqdm.tqdm(pos, desc="implement ops        [2/4]", unit="op"):
         if p in pure:
             continue
         f.write(printp2(p))
 
-    for p in pos:
+    for p in tqdm.tqdm(pos, desc="implement update ops [3/4]", unit="op"):
         if p in pure:
             continue
         for op in ops:
             f.write(printpas2(p, op))
 
-    for todo in todos:
+    for todo in tqdm.tqdm(todos, desc="Writing Todos        [4/4]", unit="op"):
         f.write(todo.print())
 
 with open(f"generated_fieldops_merged_field3d_{maxlen}.hxx", "w") as f:
