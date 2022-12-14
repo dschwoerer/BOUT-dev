@@ -214,7 +214,7 @@ def printp2(p):
     ret += "#if CHECK > 2\n"
     ret += "    if (! finite(result[i])) {\n"
     ret += (
-        '      raise BoutException("Non-finite value in expression: {:e} = '
+        '      throw BoutException("Non-finite value in expression: {:e} = '
         + re.sub("(x\\d+)", "{:e}", str(tosympy(p)[0]))
         + '", result[i], '
         + ", ".join([f"x{i}[i]" for i in range(mylen(p))])
@@ -251,12 +251,12 @@ def printpas2(p, assign=False):
         + ";\n"
     )
     ret += "#if CHECK > 2\n"
-    ret += "      if (! finite(result[i])) {\n"
+    ret += "      if (! finite((*this)[i])) {\n"
     ret += (
-        f'        raise BoutException("Non-finite value in expression: {{:e}} {assign}= '
+        f'        throw BoutException("Non-finite value in expression: {{:e}} {assign}= '
         + re.sub("(x\\d+)", "{:e}", str(tosympy(p)[0]))
         + '", (*this)[i], '
-        + ", ".join([f"x{i}[i]" for i in range(mylen(p))])
+        + ", ".join([f"rhs.x{i}[i]" for i in range(mylen(p))])
         + ");\n"
     )
     ret += "      }\n"
