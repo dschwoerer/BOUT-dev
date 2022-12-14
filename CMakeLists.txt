@@ -541,10 +541,44 @@ set(BOUT_USE_METRIC_3D ${BOUT_ENABLE_METRIC_3D})
 
 
 set(MERGED_FIELDOPS_LEVELS 0 2 3 4 5 6 7)
-set(BOUT_USE_MERGED_FIELDOPS 4 CACHE STRING "Set merged fieldops level")
+set(BOUT_USE_MERGED_FIELDOPS 0 CACHE STRING "Set merged fieldops level")
 set_property(CACHE BOUT_USE_MERGED_FIELDOPS PROPERTY STRINGS ${MERGED_FIELDOPS_LEVELS})
 if (NOT BOUT_USE_MERGED_FIELDOPS IN_LIST MERGED_FIELDOPS_LEVELS)
   message(FATAL_ERROR "BOUT_USE_MERGED_FIELDOPS must be one of ${MERGED_FIELDOPS_LEVELS}")
+endif()
+if (BOUT_USE_MERGED_FIELDOPS)
+  find_package(Python3)
+  if (NOT Python3_FOUND)
+    message(FATAL_ERROR "python not found, but you have requested to generate code!")
+  endif()
+
+  execute_process(COMMAND ${Python3_EXECUTABLE} -c "import sympy"
+    RESULT_VARIABLE sympy_FOUND)
+  if (NOT sympy_FOUND EQUAL 0)
+    message(FATAL_ERROR "sympy not found, but you have requested to generate code! Try `pip install sympy tqdm`")
+  endif()
+
+  execute_process(COMMAND ${Python3_EXECUTABLE} -c "import tqdm"
+    RESULT_VARIABLE tqdm_FOUND)
+  if (NOT tqdm_FOUND EQUAL 0)
+    message(FATAL_ERROR "tqdm not found, but you have requested to generate code! Try `pip install sympy tqdm`")
+  endif()
+
+  set(COMMENT "Generating source code (merged fieldops)")
+  if (BOUT_USE_MERGED_FIELDOPS EQUAL 6)
+    set(COMMENT "Generating source code (merged fieldops); this might take several minutes; set VERBOSE=1 to see progress; note compiling will also be very slow.")
+  endif()
+  if (BOUT_USE_MERGED_FIELDOPS EQUAL 7)
+    set(COMMENT "Generating source code (merged fieldops); this might take an hour; set VERBOSE=1 to see progress; note compiling will be extremly slow.")
+  endif()
+  add_custom_command( OUTPUT
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/bout/generated_fieldops_merged_declare_${BOUT_USE_MERGED_FIELDOPS}.hxx
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/bout/generated_fieldops_merged_implement_${BOUT_USE_MERGED_FIELDOPS}.hxx
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/bout/generated_fieldops_merged_field3d_${BOUT_USE_MERGED_FIELDOPS}.hxx
+    COMMAND ${Python3_EXECUTABLE} generate_enhanced_field_ops.py ${BOUT_USE_MERGED_FIELDOPS}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/bout/generate_enhanced_field_ops.py
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/bout/
+    COMMENT ${COMMENT})
 endif()
 message(STATUS "Merged field ops level: BOUT_USE_MERGED_FIELDOPS=${BOUT_USE_MERGED_FIELDOPS}")
 target_compile_definitions(bout++ PUBLIC "BOUT_USE_MERGED_FIELDOPS=${BOUT_USE_MERGED_FIELDOPS}")
@@ -889,6 +923,7 @@ message("
    Metric type              : ${BOUT_METRIC_TYPE}
    Python API support       : ${BOUT_USE_PYTHON}
    Sanitizers enabled       : ${BOUT_USE_SANITIZERS}
+   Merged FieldOps          : ${BOUT_USE_MERGED_FIELDOPS}
 
    === Python ===
 
