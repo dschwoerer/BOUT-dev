@@ -272,13 +272,11 @@ def printpas2(p, assign=False):
 
 
 for i in range(maxlen):
-    # posesc = [x if x in pure else f"l{x}r" for x in pos]
     posesc = [x if x in pure else f"l{x}r" for x in pos if mylen(x) < maxlen]
 
     for a, b in tqdm.contrib.itertools.product(
         posesc, posesc, desc=f"Finding ops          [{i+1}/{maxlen}]", unit="op"
     ):
-        # if mylen(a) + mylen(b) <= maxlen:
         if mylen(a + b) <= maxlen:
             for op in names:
                 ret = f"{a}{op}{b}"
@@ -287,13 +285,10 @@ for i in range(maxlen):
         else:
             for op in names:
                 todos2.add(Todo2(a, op, b))
-# print(pos)
-# [tosympy(s) for s in pos]
-# print(len(pos))
+
 pos = sorted(pos)
 todos = sorted(todos)
 todos2 = sorted(todos2)
-# print(todos)
 
 realopen = open
 
