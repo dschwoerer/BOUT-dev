@@ -47,6 +47,8 @@
 #include <set>
 #include <string>
 
+class TemporaryOpF3D;
+
 #ifdef _MSC_VER
 // finite is not actually standard C++, it's a BSD extention for C
 inline auto finite(BoutReal x) -> bool { return std::isfinite(x); }
@@ -453,7 +455,9 @@ inline BoutReal randomu() {
  * Calculate the square of a variable \p t
  * i.e. t * t
  */
-template <typename T>
+template <typename T,
+	  std::enable_if_t<not std::is_base_of<TemporaryOpF3D, T>::value, bool> = true
+	  >
 BOUT_HOST_DEVICE inline T SQ(const T& t) {
   return t*t;
 }

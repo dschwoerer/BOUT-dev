@@ -724,6 +724,15 @@ inline BoutReal max(const T& f, bool allpe = false,
                     const std::string& rgn = "RGN_NOBNDRY") {
   return max(static_cast<Field3D>(f), allpe, rgn);
 }
+
+template <typename T,
+	  std::enable_if_t<std::is_base_of<TemporaryOpF3D, T>::value, bool> = true
+	  >
+BOUT_HOST_DEVICE inline auto SQ(const T& t) {
+  Field3D ts = t;
+  return ts*ts;
+}
 #endif // BOUT_USE_MERGED_FIELDOPS
+
 
 #endif /* __FIELD3D_H__ */
