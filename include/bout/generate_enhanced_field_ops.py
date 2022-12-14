@@ -320,26 +320,23 @@ with open(f"generated_fieldops_merged_declare_{maxlen}.hxx", "w") as f:
             continue
         f.write(printp1(p))
 
-    for todo in tqdm.tqdm(todos, desc="Calclulating Todos   [1/5]", unit="op"):
+    for todo in tqdm.tqdm(todos, desc="Calclulating Todos   [1/4]", unit="op"):
         f.write(todo.print1())
 
 with open(f"generated_fieldops_merged_implement_{maxlen}.hxx", "w") as f:
 
-    for p in tqdm.tqdm(pos, desc="implement ops        [2/5]", unit="op"):
+    for p in tqdm.tqdm(pos, desc="implement ops        [2/4]", unit="op"):
         if p in pure:
             continue
         f.write(printp2(p))
 
-    for p in tqdm.tqdm(pos, desc="implement update ops [3/5]", unit="op"):
+    for p in tqdm.tqdm(pos, desc="implement update ops [3/4]", unit="op"):
         if p in pure:
             continue
         for op in ops:
             f.write(printpas2(p, op))
 
-    for todo in tqdm.tqdm(todos, desc="Writing Todos        [4/5]", unit="op"):
-        f.write(todo.print())
-
-    for todo in tqdm.tqdm(todos2, desc="Writing Todos2       [5/5]", unit="op"):
+    for todo in tqdm.tqdm(todos, desc="Writing Todos        [4/4]", unit="op"):
         f.write(todo.print())
 
     for op in ops:
@@ -348,7 +345,7 @@ with open(f"generated_fieldops_merged_implement_{maxlen}.hxx", "w") as f:
 template <typename T1,
 	std::enable_if_t<bout::utils::is_TemporaryOpF3D<T1>::value, bool> = true,
         typename T2,
-	std::enable_if_t<bout::utils::is_Field<T2>::value and not bout::utils::is_Field3D<T2>::value, bool> = true
+	std::enable_if_t<not bout::utils::is_TemporaryOpF3D<T2>::value, bool> = true
         >
 inline Field3D operator{op}(const T1& f1, const T2& f2) {{
   return static_cast<Field3D>(f1) {op} f2;
@@ -357,10 +354,23 @@ inline Field3D operator{op}(const T1& f1, const T2& f2) {{
 template <typename T1,
 	std::enable_if_t<bout::utils::is_TemporaryOpF3D<T1>::value, bool> = true,
         typename T2,
-	std::enable_if_t<bout::utils::is_Field<T2>::value and not bout::utils::is_Field3D<T2>::value, bool> = true
+	std::enable_if_t<not bout::utils::is_TemporaryOpF3D<T2>::value, bool> = true
         >
 inline Field3D operator{op}(const T2& f1, const T1& f2) {{
   return f1 {op} static_cast<Field3D>(f2);
+}}
+
+template <typename T1,
+	std::enable_if_t<bout::utils::is_TemporaryOpF3D<T1>::value, bool> = true,
+        typename T2,
+	std::enable_if_t<bout::utils::is_TemporaryOpF3D<T2>::value, bool> = true
+        >
+inline auto operator{op}(const T1& f1, const T2& f2) {{
+  // C++17
+  // if constexpr (sizeof(T2) > sizeof(T1)) {{
+  //   return f1 {op} static_cast<Field3D>(f2);
+  // }}
+  return static_cast<Field3D>(f1) {op} f2;
 }}
 """
         )
