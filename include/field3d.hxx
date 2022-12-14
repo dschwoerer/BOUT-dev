@@ -42,22 +42,20 @@ class Mesh;  // #include "bout/mesh.hxx"
 
 #include <vector>
 
-#define BOUT_USE_ADVANCED_FIELDOPS 2
-
-#if BOUT_USE_ADVANCED_FIELDOPS == 2
+#if BOUT_USE_MERGED_FIELDOPS == 2
 #include "bout/generated_fieldops_merged_declare_2.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS == 3
+#elif BOUT_USE_MERGED_FIELDOPS == 3
 #include "bout/generated_fieldops_merged_declare_3.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS == 4
+#elif BOUT_USE_MERGED_FIELDOPS == 4
 #include "bout/generated_fieldops_merged_declare_4.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS == 5
+#elif BOUT_USE_MERGED_FIELDOPS == 5
 #include "bout/generated_fieldops_merged_declare_5.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS == 6
+#elif BOUT_USE_MERGED_FIELDOPS == 6
 #include "bout/generated_fieldops_merged_declare_6.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS  == 7
+#elif BOUT_USE_MERGED_FIELDOPS  == 7
 #include "bout/generated_fieldops_merged_declare_7.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS != 0
-#error Unexpected Value of BOUT_USE_ADVANCED_FIELDOPS
+#elif BOUT_USE_MERGED_FIELDOPS != 0
+#error Unexpected Value of BOUT_USE_MERGED_FIELDOPS
 #endif
 
 /// Class for 3D X-Y-Z scalar fields
@@ -501,20 +499,20 @@ class Field3D : public Field {
   friend void swap(Field3D& first, Field3D& second) noexcept;
 
 
-#if BOUT_USE_ADVANCED_FIELDOPS == 2
+#if BOUT_USE_MERGED_FIELDOPS == 2
 #include "bout/generated_fieldops_merged_field3d_2.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS == 3
+#elif BOUT_USE_MERGED_FIELDOPS == 3
 #include "bout/generated_fieldops_merged_field3d_3.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS == 4
+#elif BOUT_USE_MERGED_FIELDOPS == 4
 #include "bout/generated_fieldops_merged_field3d_4.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS == 5
+#elif BOUT_USE_MERGED_FIELDOPS == 5
 #include "bout/generated_fieldops_merged_field3d_5.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS == 6
+#elif BOUT_USE_MERGED_FIELDOPS == 6
 #include "bout/generated_fieldops_merged_field3d_6.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS == 7
+#elif BOUT_USE_MERGED_FIELDOPS == 7
 #include "bout/generated_fieldops_merged_field3d_7.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS != 0
-#error Unexpected Value of BOUT_USE_ADVANCED_FIELDOPS
+#elif BOUT_USE_MERGED_FIELDOPS != 0
+#error Unexpected Value of BOUT_USE_MERGED_FIELDOPS
 #endif
 
   
@@ -540,7 +538,7 @@ FieldPerp operator-(const Field3D &lhs, const FieldPerp &rhs);
 FieldPerp operator*(const Field3D &lhs, const FieldPerp &rhs);
 FieldPerp operator/(const Field3D &lhs, const FieldPerp &rhs);
 
-#if BOUT_USE_ADVANCED_FIELDOPS == 0
+#if BOUT_USE_MERGED_FIELDOPS == 0
 Field3D operator+(const Field3D &lhs, const Field3D &rhs);
 Field3D operator-(const Field3D &lhs, const Field3D &rhs);
 Field3D operator*(const Field3D &lhs, const Field3D &rhs);
@@ -673,23 +671,23 @@ bool operator==(const Field3D &a, const Field3D &b);
 std::ostream& operator<<(std::ostream &out, const Field3D &value);
 
 
-#if BOUT_USE_ADVANCED_FIELDOPS == 2
+#if BOUT_USE_MERGED_FIELDOPS == 2
 #include "bout/generated_fieldops_merged_implement_2.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS == 3
+#elif BOUT_USE_MERGED_FIELDOPS == 3
 #include "bout/generated_fieldops_merged_implement_3.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS == 4
+#elif BOUT_USE_MERGED_FIELDOPS == 4
 #include "bout/generated_fieldops_merged_implement_4.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS == 5
+#elif BOUT_USE_MERGED_FIELDOPS == 5
 #include "bout/generated_fieldops_merged_implement_5.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS == 6
+#elif BOUT_USE_MERGED_FIELDOPS == 6
 #include "bout/generated_fieldops_merged_implement_6.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS == 7
+#elif BOUT_USE_MERGED_FIELDOPS == 7
 #include "bout/generated_fieldops_merged_implement_7.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS != 0
-#error Unexpected Value of BOUT_USE_ADVANCED_FIELDOPS
+#elif BOUT_USE_MERGED_FIELDOPS != 0
+#error Unexpected Value of BOUT_USE_MERGED_FIELDOPS
 #endif
 
-#if BOUT_USE_ADVANCED_FIELDOPS
+#if BOUT_USE_MERGED_FIELDOPS
 #define FIELD_FUNC(name, func)                                                       \
   template<typename T,   \
 	   std::enable_if_t<bout::utils::is_TemporaryOpF3D<T>::value, bool> = true    \
@@ -726,6 +724,6 @@ inline BoutReal max(const T& f, bool allpe = false,
                     const std::string& rgn = "RGN_NOBNDRY") {
   return max(static_cast<Field3D>(f), allpe, rgn);
 }
-#endif // BOUT_USE_ADVANCED_FIELDOPS
+#endif // BOUT_USE_MERGED_FIELDOPS
 
 #endif /* __FIELD3D_H__ */
