@@ -48,8 +48,12 @@ class Mesh;  // #include "bout/mesh.hxx"
 #include "bout/generated_fieldops_merged_declare_2.hxx"
 #elif BOUT_USE_ADVANCED_FIELDOPS == 3
 #include "bout/generated_fieldops_merged_declare_3.hxx"
+#elif BOUT_USE_ADVANCED_FIELDOPS == 4
+#include "bout/generated_fieldops_merged_declare_4.hxx"
 #elif BOUT_USE_ADVANCED_FIELDOPS == 5
 #include "bout/generated_fieldops_merged_declare_5.hxx"
+#elif BOUT_USE_ADVANCED_FIELDOPS == 6
+#include "bout/generated_fieldops_merged_declare_6.hxx"
 #elif BOUT_USE_ADVANCED_FIELDOPS  == 7
 #include "bout/generated_fieldops_merged_declare_7.hxx"
 #elif BOUT_USE_ADVANCED_FIELDOPS != 0
@@ -501,9 +505,13 @@ class Field3D : public Field {
 #include "bout/generated_fieldops_merged_field3d_2.hxx"
 #elif BOUT_USE_ADVANCED_FIELDOPS == 3
 #include "bout/generated_fieldops_merged_field3d_3.hxx"
+#elif BOUT_USE_ADVANCED_FIELDOPS == 4
+#include "bout/generated_fieldops_merged_field3d_4.hxx"
 #elif BOUT_USE_ADVANCED_FIELDOPS == 5
 #include "bout/generated_fieldops_merged_field3d_5.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS  == 7
+#elif BOUT_USE_ADVANCED_FIELDOPS == 6
+#include "bout/generated_fieldops_merged_field3d_6.hxx"
+#elif BOUT_USE_ADVANCED_FIELDOPS == 7
 #include "bout/generated_fieldops_merged_field3d_7.hxx"
 #elif BOUT_USE_ADVANCED_FIELDOPS != 0
 #error Unexpected Value of BOUT_USE_ADVANCED_FIELDOPS
@@ -669,9 +677,13 @@ std::ostream& operator<<(std::ostream &out, const Field3D &value);
 #include "bout/generated_fieldops_merged_implement_2.hxx"
 #elif BOUT_USE_ADVANCED_FIELDOPS == 3
 #include "bout/generated_fieldops_merged_implement_3.hxx"
+#elif BOUT_USE_ADVANCED_FIELDOPS == 4
+#include "bout/generated_fieldops_merged_implement_4.hxx"
 #elif BOUT_USE_ADVANCED_FIELDOPS == 5
 #include "bout/generated_fieldops_merged_implement_5.hxx"
-#elif BOUT_USE_ADVANCED_FIELDOPS  == 7
+#elif BOUT_USE_ADVANCED_FIELDOPS == 6
+#include "bout/generated_fieldops_merged_implement_6.hxx"
+#elif BOUT_USE_ADVANCED_FIELDOPS == 7
 #include "bout/generated_fieldops_merged_implement_7.hxx"
 #elif BOUT_USE_ADVANCED_FIELDOPS != 0
 #error Unexpected Value of BOUT_USE_ADVANCED_FIELDOPS
