@@ -47,7 +47,7 @@ def rotating_ellipse(
 
     # Create the 3D grid by putting together 2D poloidal grids
     grid = zb.grid.Grid(poloidal_grid, ycoords, yperiod, yperiodic=True)
-    maps = zb.make_maps(grid, field, quiet=True)
+    maps = zb.make_maps(grid, field, quiet=True, MXG=1)
     zb.write_maps(grid, field, maps, str(fname), metric2d=bc.isMetric2D())
 
 
