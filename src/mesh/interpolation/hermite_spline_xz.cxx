@@ -101,8 +101,8 @@ private:
   }
 };
 
-XZHermiteSpline::XZHermiteSpline(int y_offset, Mesh *mesh)
-    : XZInterpolation(y_offset, mesh),
+XZHermiteSpline::XZHermiteSpline(int y_offset, Mesh *meshin)
+    : XZInterpolation(y_offset, meshin),
       h00_x(localmesh), h01_x(localmesh), h10_x(localmesh), h11_x(localmesh),
       h00_z(localmesh), h01_z(localmesh), h10_z(localmesh), h11_z(localmesh) {
 
@@ -140,13 +140,13 @@ XZHermiteSpline::XZHermiteSpline(int y_offset, Mesh *mesh)
   // PetscInt N, 			      PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt
   //o_nnz[], Mat *A)
   //  MatSetSizes(Mat A,PetscInt m,PetscInt n,PetscInt M,PetscInt N)
-  const int m = mesh->LocalNx * mesh->LocalNy * mesh->LocalNz;
-  const int M = m * mesh->getNXPE() * mesh->getNYPE();
+  const int m = localmesh->LocalNx * localmesh->LocalNy * localmesh->LocalNz;
+  const int M = m * localmesh->getNXPE() * localmesh->getNYPE();
   MatCreateAIJ(MPI_COMM_WORLD, m, m, M, M, 16, nullptr, 16, nullptr, &petscWeights);
 #endif
 #endif
 #ifndef HS_USE_PETSC
-  if (mesh->getNXPE() > 1){
+  if (localmesh->getNXPE() > 1){
     throw BoutException("Require PETSc for MPI splitting in X");
   }
 #endif

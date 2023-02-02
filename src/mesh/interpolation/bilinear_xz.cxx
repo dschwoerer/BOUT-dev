@@ -31,7 +31,7 @@ XZBilinear::XZBilinear(int y_offset, Mesh *mesh)
   : XZInterpolation(y_offset, mesh),
     w0(localmesh), w1(localmesh), w2(localmesh), w3(localmesh) {
 
-  if (mesh->getNXPE() > 1){
+  if (localmesh->getNXPE() > 1){
     throw BoutException("Do not support MPI splitting in X");
   }
 

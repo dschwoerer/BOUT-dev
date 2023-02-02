@@ -29,7 +29,7 @@
 XZLagrange4pt::XZLagrange4pt(int y_offset, Mesh *mesh)
     : XZInterpolation(y_offset, mesh), t_x(localmesh), t_z(localmesh) {
 
-  if (mesh->getNXPE() > 1){
+  if (localmesh->getNXPE() > 1){
     throw BoutException("Do not support MPI splitting in X");
   }
 
