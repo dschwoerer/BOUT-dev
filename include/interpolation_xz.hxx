@@ -214,11 +214,23 @@ public:
 class XZMonotonicHermiteSpline : public XZHermiteSpline {
 public:
   XZMonotonicHermiteSpline(Mesh *mesh = nullptr)
-      : XZHermiteSpline(0, mesh) {}
+      : XZHermiteSpline(0, mesh) {
+    if (mesh->getNXPE() > 1){
+      throw BoutException("Do not support MPI splitting in X");
+    }
+  }
   XZMonotonicHermiteSpline(int y_offset = 0, Mesh *mesh = nullptr)
-      : XZHermiteSpline(y_offset, mesh) {}
+      : XZHermiteSpline(y_offset, mesh) {
+    if (mesh->getNXPE() > 1){
+      throw BoutException("Do not support MPI splitting in X");
+    }
+  }
   XZMonotonicHermiteSpline(const BoutMask &mask, int y_offset = 0, Mesh *mesh = nullptr)
-      : XZHermiteSpline(mask, y_offset, mesh) {}
+      : XZHermiteSpline(mask, y_offset, mesh) {
+    if (mesh->getNXPE() > 1){
+      throw BoutException("Do not support MPI splitting in X");
+    }
+  }
 
   using XZHermiteSpline::interpolate;
   /// Interpolate using precalculated weights.
