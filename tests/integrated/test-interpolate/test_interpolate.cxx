@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
   bout::writeDefaultOutputFile(dump);
 
   bout::checkForUnusedOptions();
-  interp.release();
+  interp.reset();
   BoutFinalise();
 
   return 0;
