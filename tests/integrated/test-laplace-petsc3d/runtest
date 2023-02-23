@@ -8,6 +8,7 @@ from sys import exit
 
 test_directories = [
     ("data_slab_core", 1),
+    ("data_slab_core", 4),
     ("data_slab_sol", 1),
     ("data_circular_core", 1),
     ("data_circular_core-sol", 1),

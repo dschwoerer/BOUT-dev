@@ -31,7 +31,7 @@ def rotating_ellipse(
     if rectangular:
         print("Making rectangular poloidal grid")
         poloidal_grid = zb.poloidal_grid.RectangularPoloidalGrid(
-            nx, nz, 1.0, 1.0, Rcentre=xcentre
+            nx, nz, 1.0, 1.0, Rcentre=xcentre, MXG=1
         )
     elif curvilinear:
         print("Making curvilinear poloidal grid")

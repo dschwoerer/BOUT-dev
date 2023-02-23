@@ -29,16 +29,27 @@
 # ``SUNDIALS_DEBUG``
 #   Set to TRUE to get extra debugging output
 
+message(STATUS "[ ${CMAKE_CURRENT_LIST_FILE}:${CMAKE_CURRENT_LIST_LINE} ] "
+  " SUNDIALS_INCLUDE_DIR = ${SUNDIALS_INCLUDE_DIR}"
+  " SUNDIALS_ROOT = ${SUNDIALS_ROOT}")
+
 include(FindPackageHandleStandardArgs)
 
 
-find_path(SUNDIALS_INCLUDE_DIR
+message(STATUS "[ ${CMAKE_CURRENT_LIST_FILE}:${CMAKE_CURRENT_LIST_LINE} ] "
+  " SUNDIALS_INCLUDE_DIR = ${SUNDIALS_INCLUDE_DIR}"
+  " SUNDIALS_ROOT = ${SUNDIALS_ROOT}")
+
+if(NOT SUNDIALS_INCLUDE_DIR)
+  find_path(SUNDIALS_INCLUDE_DIR
   sundials_config.h
   HINTS
     "${SUNDIALS_ROOT}"
     ENV SUNDIALS_DIR
   PATH_SUFFIXES include include/sundials
   DOC "SUNDIALS Directory")
+endif()
+message(STATUS "WTF?!?")
 
 if (SUNDIALS_DEBUG)
   message(STATUS "[ ${CMAKE_CURRENT_LIST_FILE}:${CMAKE_CURRENT_LIST_LINE} ] "

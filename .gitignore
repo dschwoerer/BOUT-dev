@@ -81,3 +81,4 @@ coverage/
 /_wheel*/
 /dist/
 /_version.txt
+/2dmetric/

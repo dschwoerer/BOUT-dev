@@ -1,5 +1,9 @@
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/")
 
+  message(STATUS "[ ${CMAKE_CURRENT_LIST_FILE}:${CMAKE_CURRENT_LIST_LINE} ] "
+    " SUNDIALS_INCLUDE_DIR = ${SUNDIALS_INCLUDE_DIR}"
+    " SUNDIALS_ROOT = ${SUNDIALS_ROOT}")
+
 # determined in SetupCompilers.cmake
 if (BOUT_USE_MPI)
   target_link_libraries(bout++ PUBLIC MPI::MPI_CXX)
@@ -235,6 +239,14 @@ if (BOUT_USE_SUNDIALS)
     FetchContent_MakeAvailable(sundials)
     message(STATUS "SUNDIALS done configuring")
   else()
+    message(STATUS "${BOUT_USE_SUNDIALS}: ${SUNDIALS_ROOT}")
+    if(EXISTS ${BOUT_USE_SUNDIALS})
+      message(STATUS "${BOUT_USE_SUNDIALS}: ${SUNDIALS_ROOT}")
+      if (NOT EXISTS ${SUNDIALS_ROOT})
+	set(SUNDIALS_ROOT ${BOUT_USE_SUNDIALS})
+      endif()
+    endif()
+    message(STATUS "${BOUT_USE_SUNDIALS}::${SUNDIALS_ROOT}")
     find_package(SUNDIALS REQUIRED)
   endif()
   target_link_libraries(bout++ PUBLIC SUNDIALS::nvecparallel)

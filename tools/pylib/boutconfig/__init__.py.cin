@@ -2,7 +2,14 @@
 
 """
 # Created by cmake
-_yesno = {"TRUE": True, "ON": True, "FALSE": False, "OFF": False}
+def _yesno(s):
+    if s in ["0", "OFF", "NO", "FALSE", "N", "IGNORE", "NOTFOUND", ""]:
+        return False
+    if s.endswith("-NOTFOUND"):
+        return False
+    return True
+
+
 _iyesno = {True: "yes", False: "no"}
 
 config = {
@@ -39,7 +46,7 @@ config = {
 has = {}
 for k in config:
     if k.startswith("has_"):
-        has[k[4:]] = _yesno[config[k]]
+        has[k[4:]] = _yesno(config[k])
 
 
 def isMetric2D():

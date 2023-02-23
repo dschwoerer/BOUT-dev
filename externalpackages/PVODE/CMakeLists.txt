@@ -49,9 +49,13 @@ add_library(pvpre
   precon/band.h
   )
 
+#set(CMAKE_CXX_FLAGS " -g ")
 
 set_target_properties(pvode PROPERTIES
   SOVERSION 1.0.0)
+
+set_target_properties(pvode PROPERTIES
+  EXPORT_COMPILE_COMMANDS ON)
 
 target_include_directories(pvpre PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/pvode>
