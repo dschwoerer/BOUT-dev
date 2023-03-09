@@ -1490,7 +1490,7 @@ Field3D Coordinates::DDY(const Field3D& f, CELL_LOC outloc, const std::string& m
   if (! f.hasParallelSlices() and ! transform->canToFromFieldAligned()) {
     Field3D f_parallel = f;
     transform->calcParallelSlices(f_parallel);
-    f_parallel.applyParallelBoundary("parallel_neumann_o2");
+    f_parallel.applyParallelBoundary("parallel_neumann_o1");
     return bout::derivatives::index::DDY(f_parallel, outloc, method, region);
   }
 #endif
@@ -1624,7 +1624,7 @@ Coordinates::FieldMetric Coordinates::Grad2_par2(const Field2D& f, CELL_LOC outl
   if (Grad2_par2_DDY_invSg == nullptr) {
     // Communicate to get parallel slices
     localmesh->communicate(*invSg);
-    invSg->applyParallelBoundary("parallel_neumann_o2");
+    invSg->applyParallelBoundary("parallel_neumann_o1");
     // cache
     Grad2_par2_DDY_invSg = std::make_unique<FieldMetric>();
     (*Grad2_par2_DDY_invSg) = DDY(*invSg, outloc, method) * (*invSg);
@@ -1651,7 +1651,7 @@ Field3D Coordinates::Grad2_par2(const Field3D& f, CELL_LOC outloc,
   if (Grad2_par2_DDY_invSg == nullptr) {
     // Communicate to get parallel slices
     localmesh->communicate(*invSg);
-    invSg->applyParallelBoundary("parallel_neumann_o2");
+    invSg->applyParallelBoundary("parallel_neumann_o1");
     // cache
     Grad2_par2_DDY_invSg = std::make_unique<FieldMetric>();
     (*Grad2_par2_DDY_invSg) = DDY(*invSg, outloc, method) * (*invSg);

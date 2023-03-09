@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
       Field3D input{FieldFactory::get()->create3D(fmt::format("input_{:d}:function", i), Options::getRoot(), mesh)};
       //options->get(fmt::format("input_{:d}:boundary_perp", i), temp_str, s"free_o3");
       mesh->communicate(input);
-      input.applyParallelBoundary("parallel_neumann_o2");
+      input.applyParallelBoundary("parallel_neumann_o1");
       for (int slice = -mesh->ystart; slice <= mesh->ystart; ++slice) {
 	if (slice) {
 	  Field3D tmp{0.};

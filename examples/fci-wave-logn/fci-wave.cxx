@@ -65,7 +65,7 @@ protected:
 
     // Neumann boundaries simplifies parallel derivatives
     Bxyz.applyBoundary("neumann");
-    Bxyz.applyParallelBoundary("parallel_neumann_o2");
+    Bxyz.applyParallelBoundary("parallel_neumann_o1");
     SAVE_ONCE(Bxyz);
 
     Options::getRoot()->getSection("fciwave")->get("expand_divergence", expand_divergence, true);
