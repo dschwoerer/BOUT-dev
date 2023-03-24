@@ -69,6 +69,7 @@ jobs:
         # queries: security-extended,security-and-quality
 
     - name: Install dependencies
+      if: ${{ matrix.language == 'cpp' }}
       run: sudo apt update &&
            sudo apt install -y
                 libfftw3-dev
@@ -91,21 +92,25 @@ jobs:
     # Autobuild attempts to build any compiled languages  (C/C++, C#, Go, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
     - name: Install pip packages
+      if: ${{ matrix.language == 'cpp' }}
       run: |
         ./.pip_install_for_travis.sh 'cython~=0.29' 'netcdf4~=1.5' 'sympy~=1.5' 'gcovr' 'cmake' 'h5py' zoidberg
         # Add the pip install location to the runner's PATH
         echo ~/.local/bin >> $GITHUB_PATH
 
     - name: Cache SUNDIALS build
+      if: ${{ matrix.language == 'cpp' }}
       uses: actions/cache@v2
       with:
         path: /home/runner/local
         key: bout-sundials-ubuntu-latest
 
     - name: Build SUNDIALS
+      if: ${{ matrix.language == 'cpp' }}
       run: ./.build_sundials_for_travis.sh
 
     - name: Build (CMake)
+      if: ${{ matrix.language == 'cpp' }}
       run: ./.ci_with_cmake.sh ${{ env.cmake_options }}
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
