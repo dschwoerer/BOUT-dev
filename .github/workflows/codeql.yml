@@ -36,6 +36,7 @@ jobs:
                       -DBOUT_USE_SLEPC=ON
                       -DBOUT_USE_SUNDIALS=ON
                       -DBOUT_ENABLE_PYTHON=ON
+                      -DBOUT_ENABLE_TESTS=OFF
                       -DSUNDIALS_ROOT=/home/runner/local"
       omp_num_threads: 2
 
@@ -111,7 +112,10 @@ jobs:
 
     - name: Build (CMake)
       if: ${{ matrix.language == 'cpp' }}
-      run: ./.ci_with_cmake.sh ${{ env.cmake_options }}
+      run: |
+        cmake -S . -B build ${{ env.cmake_options }}
+        cmake --build build -j 2
+
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
 
