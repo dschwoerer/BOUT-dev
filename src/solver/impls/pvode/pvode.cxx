@@ -195,14 +195,14 @@ int PvodeSolver::init() {
     /* ropt[HMAX]    : maximum absolute value of step size allowed.   *
      *                 Optional input. (Default is infinity).         */
     const BoutReal hmax(
-        (*options)["max_timestep"].doc("Maximum internal timestep").withDefault(-1));
+        (*options)["max_timestep"].doc("Maximum internal timestep").withDefault(-1.));
     if (hmax > 0) {
       ropt[HMAX] = hmax;
     }
     /* ropt[HMIN]    : minimum absolute value of step size allowed.   *
      *                 Optional input. (Default is 0.0).              */
     const BoutReal hmin(
-        (*options)["min_timestep"].doc("Minimum internal timestep").withDefault(-1));
+        (*options)["min_timestep"].doc("Minimum internal timestep").withDefault(-1.));
     if (hmin > 0) {
       ropt[HMIN] = hmin;
     }
