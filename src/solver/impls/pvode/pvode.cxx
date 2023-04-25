@@ -214,8 +214,9 @@ int PvodeSolver::init() {
       iopt[MAXORD] = maxOrder;
     }
   }
+  const bool use_adam((*options)["adams_moulton"].doc("Use Adams Moulton solver instead of BDF").withDefault(false));
 
-  cvode_mem = CVodeMalloc(neq, solver_f, simtime, u, BDF, NEWTON, SS, &reltol, &abstol,
+  cvode_mem = CVodeMalloc(neq, solver_f, simtime, u, use_adam ? ADAMS : BDF, NEWTON, SS, &reltol, &abstol,
                           this, nullptr, optIn, iopt, ropt, machEnv);
 
   if (cvode_mem == nullptr) {
