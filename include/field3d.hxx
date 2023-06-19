@@ -295,6 +295,10 @@ class Field3D : public Field {
   /// cuts on closed field lines?
   bool requiresTwistShift(bool twist_shift_enabled);
 
+  /// Enable a special tracking mode for debugging
+  /// Save all changes that, are done to the field, to tracking
+  Field3D& enableTracking(const std::string& name, Options& tracking);
+
   /////////////////////////////////////////////////////////
   // Data access
 
@@ -504,6 +508,13 @@ private:
 
   /// RegionID over which the field is valid
   int regionID{-1};
+
+  int tracking_state{0};
+  Options* tracking{nullptr};
+  std::string selfname{""};
+  template <class T>
+  Options* track(const T& change, std::string op);
+  Options* track(const BoutReal& change, std::string op);
 };
 
 // Non-member overloaded operators
