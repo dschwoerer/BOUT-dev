@@ -564,7 +564,7 @@ void checkData(const Field3D& f, const std::string& region, const std::string& s
 /// Ignored with disabled CHECK; Throw an exception if \p f is not
 /// allocated or if any elements are non-finite (for CHECK > 2)
 inline void checkData(const Field3D& UNUSED(f), const std::string& UNUSED(region) = "RGN_NOBNDRY") {};
-inline void checkData(const Field3D& f, const std::string& region, const std::string& src, const Field3D& s1, const Field3D& s2) {};
+inline void checkData(const Field3D& UNUSED(f), const std::string& UNUSED(region), const std::string& UNUSED(src), const Field3D& UNUSED(s1), const Field3D& UNUSED(s2)) {};
 #endif
 
 /// Fourier filtering, removes all except one mode
