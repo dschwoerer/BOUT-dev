@@ -42,11 +42,38 @@
 #include <pvode/cvspgmr.h>   // use CVSPGMR linear solver each internal step
 #include <pvode/pvbbdpre.h>  // band preconditioner function prototypes
 
+#include <string>
+
 using namespace pvode;
 
 void solver_f(integer N, BoutReal t, N_Vector u, N_Vector udot, void *f_data);
 void solver_gloc(integer N, BoutReal t, BoutReal* u, BoutReal* udot, void *f_data);
 void solver_cfn(integer N, BoutReal t, N_Vector u, void *f_data);
+
+namespace {
+// local only
+void pvode_load_data_f3d(const std::vector<bool>& evolve_bndrys,
+                         std::vector<Field3D>& ffs, BoutReal* udata) {
+  int p = 0;
+  Mesh* mesh = ffs[0].getMesh();
+  const int nz = mesh->LocalNz;
+  for (const auto& bndry : {true, false}) {
+    for (const auto& i2d : mesh->getRegion2D(bndry ? "RGN_BNDRY" : "RGN_NOBNDRY")) {
+      for (int jz = 0; jz < nz; jz++) {
+        // Loop over 3D variables
+        std::vector<bool>::const_iterator evolve_bndry = evolve_bndrys.begin();
+        for (std::vector<Field3D>::iterator ff = ffs.begin(); ff != ffs.end(); ++ff) {
+          if (bndry && !*evolve_bndry)
+            continue;
+          (*ff)[mesh->ind2Dto3D(i2d, jz)] = udata[p];
+          p++;
+        }
+        ++evolve_bndry;
+      }
+    }
+  }
+}
+} // namespace
 
 const BoutReal ZERO = 0.0;
 
@@ -321,6 +348,44 @@ BoutReal PvodeSolver::run(BoutReal tout) {
   // Check return flag
   if(flag != SUCCESS) {
     output_error.write("ERROR CVODE step failed, flag = {:d}\n", flag);
+    CVodeMemRec* cv_mem = (CVodeMem)cvode_mem;
+    if (f2d.empty() and v2d.empty() and v3d.empty()) {
+      Options debug{};
+      using namespace std::string_literals;
+      Mesh* mesh{};
+      for (const auto& prefix : {""s, "residuum_"s}) {
+        std::vector<Field3D> ffs{};
+        std::vector<bool> evolve_bndrys{};
+        for (const auto& f : f3d) {
+          Field3D ff{0.};
+          ff.allocate();
+          ff.setLocation(f.location);
+          mesh = ff.getMesh();
+          debug[fmt::format("{:s}{:s}", prefix, f.name)] = ff;
+          ffs.push_back(ff);
+          evolve_bndrys.push_back(f.evolve_bndry);
+        }
+        pvode_load_data_f3d(evolve_bndrys, ffs,
+                            prefix == ""s ? udata : N_VDATA(cv_mem->cv_acor));
+      }
+
+      for (auto& f : f3d) {
+        f.F_var->enableTracking(fmt::format("ddt_{:s}", f.name), debug);
+      }
+      run_rhs(simtime);
+
+      if (mesh) {
+        mesh->outputVars(debug);
+        debug["BOUT_VERSION"].force(bout::version::as_double);
+      }
+
+      std::string outname = fmt::format(
+          "{}/BOUT.debug.{}.nc",
+          Options::root()["datadir"].withDefault<std::string>("data"), BoutComm::rank());
+
+      bout::OptionsNetCDF(outname).write(debug);
+      MPI_Barrier(BoutComm::get());
+    }
     return(-1.0);
   }
 
