@@ -174,9 +174,21 @@ inline bool areFieldsCompatible(const Field& field1, const Field& field2) {
 			#field2, toString((field2).getDirections()));	\
   }
 
+#define ASSERT1_NOT_FCI(f)                                                              \
+  if (isFci(f)) {                                                                       \
+    throw BoutException("Error in {:s}:{:d}\n{:s} is an FCI field", __FILE__, __LINE__, \
+                        #f);                                                            \
+  }
+
 #else
 #define ASSERT1_FIELDS_COMPATIBLE(field1, field2);
+#define ASSERT1_NOT_FCI(f) ;
 #endif
+
+template <typename F>
+inline bool isFci(const F& f) {
+  return not f.getCoordinates()->getParallelTransform().canToFromFieldAligned();
+}
 
 /// Return an empty shell field of some type derived from Field, with metadata
 /// copied and a data array that is allocated but not initialised.

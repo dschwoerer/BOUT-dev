@@ -192,6 +192,10 @@ Div_a_Laplace_perp(const Field3D& a, const Field3D& x) {
     ASSERT1_FIELDS_COMPATIBLE(f_in, v_in);
     ASSERT1_FIELDS_COMPATIBLE(f_in, wave_speed_in);
 
+    ASSERT1_NOT_FCI(f_in);
+    ASSERT1_NOT_FCI(v_in);
+    ASSERT1_NOT_FCI(wave_speed_in);
+
     Mesh* mesh = f_in.getMesh();
 
     CellEdges cellboundary;
