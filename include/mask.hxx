@@ -71,6 +71,7 @@ public:
     return mask(jx, jy, jz);
   }
   inline const bool& operator[](const Ind3D& i) const { return mask[i]; }
+  inline bool& operator[](const Ind3D& i) { return mask[i]; }
 };
 
 inline Region<Ind3D> regionFromMask(const BoutMask& mask,
@@ -83,4 +84,13 @@ inline Region<Ind3D> regionFromMask(const BoutMask& mask,
   }
   return Region<Ind3D>{indices};
 }
+
+inline BoutMask maskFromRegion(const Region<Ind3D>& region, const Mesh* mesh) {
+  BoutMask mask{mesh, false};
+  //(int nx, int ny, int nz, bool value=false) :
+
+  BOUT_FOR(i, region) { mask[i] = true; }
+  return mask;
+}
+
 #endif //__MASK_H__
