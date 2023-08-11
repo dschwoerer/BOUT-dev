@@ -371,6 +371,7 @@ BoutReal PvodeSolver::run(BoutReal tout) {
 
       for (auto& f : f3d) {
         f.F_var->enableTracking(fmt::format("ddt_{:s}", f.name), debug);
+	setName(f.var, f.name);
       }
       run_rhs(simtime);
 
