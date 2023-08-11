@@ -287,7 +287,7 @@ struct SpecificInd {
   /// An alternative, non-branching calculation is :
   /// ind + dz - nz * ((ind + dz) / nz  - ind / nz)
   /// but this appears no faster (and perhaps slower).  
-  const inline SpecificInd zp(int dz = 1) const {
+  inline SpecificInd zp(int dz = 1) const {
     ASSERT3(dz >= 0);
     dz = dz <= nz ? dz : dz % nz; //Fix in case dz > nz, if not force it to be in range
     return {(ind + dz) % nz < dz ? ind - nz + dz : ind + dz, ny, nz};
@@ -296,10 +296,14 @@ struct SpecificInd {
   /// An alternative, non-branching calculation is :
   /// ind - dz + nz * ( (nz + ind) / nz - (nz + ind - dz) / nz)
   /// but this appears no faster (and perhaps slower).
-  const inline SpecificInd zm(int dz = 1) const {
+  inline SpecificInd zm(int dz = 1) const {
     dz = dz <= nz ? dz : dz % nz; //Fix in case dz > nz, if not force it to be in range
     ASSERT3(dz >= 0);
     return {(ind) % nz < dz ? ind + nz - dz : ind - dz, ny, nz};
+  }
+  /// Automatically select zm or zp depending on sign
+  inline SpecificInd zpm(int dz) const {
+    return dz > 0? zp(dz) : zm(-dz);
   }
 
   // and for 2 cells
@@ -311,9 +315,8 @@ struct SpecificInd {
   const inline SpecificInd zmm() const { return zm(2); }
 
   /// Generic offset of \p index in multiple directions simultaneously
-  const inline SpecificInd offset(int dx, int dy, int dz) const {
-    auto temp = (dz > 0) ? zp(dz) : zm(-dz);
-    return temp.yp(dy).xp(dx);
+  inline SpecificInd offset(int dx, int dy, int dz) const {
+    return yp(dy).xp(dx).zpm(dz);
   }
 };
 
