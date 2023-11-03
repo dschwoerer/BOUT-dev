@@ -82,3 +82,5 @@ coverage/
 /dist/
 /_version.txt
 /2dmetric/
+/CMakeCache.txt
+/CMakeFiles/cmake.check_cache
