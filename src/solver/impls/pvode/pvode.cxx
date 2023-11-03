@@ -353,7 +353,7 @@ BoutReal PvodeSolver::run(BoutReal tout) {
       Options debug{};
       using namespace std::string_literals;
       Mesh* mesh{};
-      for (const auto& prefix : {""s, "residuum_"s}) {
+      for (const auto& prefix : {"pre_"s, "residuum_"s}) {
         std::vector<Field3D> ffs{};
         std::vector<bool> evolve_bndrys{};
         for (const auto& f : f3d) {
@@ -366,7 +366,7 @@ BoutReal PvodeSolver::run(BoutReal tout) {
           evolve_bndrys.push_back(f.evolve_bndry);
         }
         pvode_load_data_f3d(evolve_bndrys, ffs,
-                            prefix == ""s ? udata : N_VDATA(cv_mem->cv_acor));
+                            prefix == "pre_"s ? udata : N_VDATA(cv_mem->cv_acor));
       }
 
       for (auto& f : f3d) {
@@ -374,6 +374,10 @@ BoutReal PvodeSolver::run(BoutReal tout) {
 	setName(f.var, f.name);
       }
       run_rhs(simtime);
+
+      for (auto& f : f3d) {
+	debug[f.name] = *f.var;
+      }
 
       if (mesh) {
         mesh->outputVars(debug);
