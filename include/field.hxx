@@ -695,5 +695,12 @@ inline T setName(T&& f, const std::string& name, Types... args) {
   return f;
 }
 
+template <typename T, typename = bout::utils::EnableIfField<T>, class... Types>
+inline void setName(T* f, const std::string& name, Types... args) {
+#if BOUT_USE_TRACK
+  f->name = fmt::format(name, args...);
+#endif
+}
+
 
 #endif /* FIELD_H */
