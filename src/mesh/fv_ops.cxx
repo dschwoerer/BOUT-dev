@@ -8,7 +8,7 @@
 
 namespace FV {
 
-// Div ( a Grad_perp(f) ) -- ∇⊥ ( a ⋅ ∇⊥ f) --  Vorticity
+// Div ( a Grad_perp(f) ) -- ∇ ⋅ ( a ∇⊥ f) --  Vorticity
 Field3D Div_a_Grad_perp(const Field3D& a, const Field3D& f) {
   ASSERT2(a.getLocation() == f.getLocation());
 
