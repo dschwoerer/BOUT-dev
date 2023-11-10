@@ -51,9 +51,7 @@
 Field3D::Field3D(Mesh* localmesh, CELL_LOC location_in,
                  DirectionTypes directions_in)
     : Field(localmesh, location_in, directions_in) {
-#if BOUT_USE_TRACK
-  name = "<F3D>";
-#endif
+  setName(this, "<F3D>");
 
   if (fieldmesh) {
     nx = fieldmesh->LocalNx;
@@ -68,6 +66,7 @@ Field3D::Field3D(const Field3D& f)
     : Field(f), data(f.data), yup_fields(f.yup_fields), ydown_fields(f.ydown_fields) {
 
   TRACE("Field3D(Field3D&)");
+  setName(this, "<F3D>");
 
   if (fieldmesh) {
     nx = fieldmesh->LocalNx;
@@ -79,6 +78,7 @@ Field3D::Field3D(const Field3D& f)
 Field3D::Field3D(const Field2D& f) : Field(f) {
 
   TRACE("Field3D: Copy constructor from Field2D");
+  setName(this, "<F3D>");
 
   nx = fieldmesh->LocalNx;
   ny = fieldmesh->LocalNy;
@@ -266,6 +266,7 @@ Field3D & Field3D::operator=(const Field3D &rhs) {
 Field3D& Field3D::operator=(Field3D&& rhs) {
   TRACE("Field3D: Assignment from Field3D");
   track(rhs, "operator=");
+  setName(this, rhs.name);
 
   // Move parallel slices or delete existing ones.
   yup_fields = std::move(rhs.yup_fields);
@@ -286,6 +287,7 @@ Field3D& Field3D::operator=(Field3D&& rhs) {
 
 Field3D & Field3D::operator=(const Field2D &rhs) {
   TRACE("Field3D = Field2D");
+  setName(this, rhs.name);
   track(rhs, "operator=");
 
   /// Check that the data is allocated
@@ -331,6 +333,7 @@ void Field3D::operator=(const FieldPerp &rhs) {
 
 Field3D & Field3D::operator=(const BoutReal val) {
   TRACE("Field3D = BoutReal");
+  setName(this, "BR");
   track(val, "operator=");
 
   // Delete existing parallel slices. We don't copy parallel slices, so any
@@ -640,9 +643,7 @@ Field3D filter(const Field3D &var, int N0, const std::string& rgn) {
     }
   }
 
-#if BOUT_USE_TRACK
-  result.name = "filter(" + var.name + ")";
-#endif
+  setName(&result, "filter(" + var.name + ")");
 
   checkData(result);
   return result;
