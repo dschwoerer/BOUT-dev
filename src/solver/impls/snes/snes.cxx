@@ -726,7 +726,7 @@ int SNESSolver::run() {
           // Print diagnostics to help identify source of the problem
 
           output.write("\n======== SNES failed =========\n");
-          output.write("\nReturn code: {}, reason: {}\n", ierr, reason);
+          output.write("\nReturn code: {}, reason: {}\n", static_cast<int>(ierr), static_cast<int>(reason));
           for (const auto& f : f2d) {
             output.write(
                 "{} : ({} -> {}), ddt: ({} -> {})\n", f.name,
@@ -816,7 +816,7 @@ int SNESSolver::run() {
 
         output.print("\r"); // Carriage return for printing to screen
         output.write("Time: {}, timestep: {}, nl iter: {}, lin iter: {}, reason: {}",
-                     simtime, timestep, nl_its, lin_its, reason);
+                     simtime, timestep, nl_its, lin_its, static_cast<int>(reason));
         if (snes_failures > 0) {
           output.write(", SNES failures: {}", snes_failures);
           snes_failures = 0;

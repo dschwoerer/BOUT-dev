@@ -1197,7 +1197,7 @@ const Field2D LaplaceXY::solve(const Field2D& rhs, const Field2D& x0) {
   KSPGetConvergedReason(ksp, &reason);
 
   if (reason <= 0) {
-    throw BoutException("LaplaceXY failed to converge. Reason {:d}", reason);
+    throw BoutException("LaplaceXY failed to converge. Reason {:d}", static_cast<int>(reason));
   }
 
   if (save_performance) {
