@@ -316,7 +316,7 @@ struct SpecificInd {
 
   /// Generic offset of \p index in multiple directions simultaneously
   inline SpecificInd offset(int dx, int dy, int dz) const {
-    return yp(dy).xp(dx).zpm(dz);
+    return zpm(dz).yp(dy).xp(dx);
   }
 };
 
