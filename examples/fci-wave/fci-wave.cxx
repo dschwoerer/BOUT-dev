@@ -1,4 +1,4 @@
-
+#include "parallel_boundary_region.hxx"
 #include "bout/physicsmodel.hxx"
 
 class FCIwave : public PhysicsModel {
@@ -31,9 +31,8 @@ private:
       const Field3D &B_next = Bxyz.ynext(reg->dir);
 
       for (reg->first(); !reg->isDone(); reg->next()) {
-        f_B_next(reg->x, reg->y + reg->dir, reg->z) =
-            f_next(reg->x, reg->y + reg->dir, reg->z) /
-            B_next(reg->x, reg->y + reg->dir, reg->z);
+        const auto inext = reg->ind().yp(reg->dir);
+        f_B_next[inext] = f_next[inext] / B_next[inext];
       }
     }
 
@@ -64,12 +63,14 @@ protected:
     auto& options = Options::root()["fciwave"];
     div_integrate = options["div_integrate"].withDefault(true);
     log_density = options["log_density"].withDefault(false);
-    background = options["background"].withDefault(false);
+    background = options["background"].withDefault(0.0);
     log_background = log(background);
 
     // Neumann boundaries simplifies parallel derivatives
     Bxyz.applyBoundary("neumann");
+    mesh->communicate(Bxyz, Bxyz.getCoordinates()->Bxy);
     Bxyz.applyParallelBoundary("parallel_neumann_o1");
+    Bxyz.getCoordinates()->Bxy.applyParallelBoundary("parallel_neumann_o1");
     SAVE_ONCE(Bxyz);
 
     SOLVE_FOR(nv);
@@ -130,17 +131,16 @@ protected:
         // Density at the boundary
         // Note: If evolving density, this should interpolate logn
         // but neumann boundaries are used here anyway.
-        BoutReal n_b =
-            0.5 * (n_next(reg->x, reg->y + reg->dir, reg->z) + n(reg->x, reg->y, reg->z));
+        const auto inext = reg->ind().yp(reg->dir);
+        const auto i = reg->ind();
+
+        BoutReal n_b = 0.5 * (n_next[inext] + n[i]);
         // Velocity at the boundary
-        BoutReal v_b =
-            0.5 * (v_next(reg->x, reg->y + reg->dir, reg->z) + v(reg->x, reg->y, reg->z));
+        BoutReal v_b = 0.5 * (v_next[inext] + v[i]);
 
-        nv_next(reg->x, reg->y + reg->dir, reg->z) =
-            2. * n_b * v_b - nv(reg->x, reg->y, reg->z);
+        nv_next[inext] = 2. * n_b * v_b - nv[i];
 
-        momflux_next(reg->x, reg->y + reg->dir, reg->z) =
-            2. * n_b * v_b * v_b - momflux(reg->x, reg->y, reg->z);
+        momflux_next[inext] = 2. * n_b * v_b * v_b - momflux[i];
       }
     }
 
