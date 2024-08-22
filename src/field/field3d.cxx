@@ -66,7 +66,7 @@ Field3D::Field3D(const Field3D& f)
     : Field(f), data(f.data), yup_fields(f.yup_fields), ydown_fields(f.ydown_fields) {
 
   TRACE("Field3D(Field3D&)");
-  setName(this, "<F3D>");
+  setName(this, f.name);
 
   if (fieldmesh) {
     nx = fieldmesh->LocalNx;
@@ -78,7 +78,7 @@ Field3D::Field3D(const Field3D& f)
 Field3D::Field3D(const Field2D& f) : Field(f) {
 
   TRACE("Field3D: Copy constructor from Field2D");
-  setName(this, "<F3D>");
+  setName(this, f.name);
 
   nx = fieldmesh->LocalNx;
   ny = fieldmesh->LocalNy;
