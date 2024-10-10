@@ -598,6 +598,9 @@ Coordinates::Coordinates(Mesh* mesh, Options* options)
     // IntShiftTorsion will not be used, but set to zero to avoid uninitialized field
     IntShiftTorsion = 0.;
   }
+
+  // Allow transform to fix things up
+  transform->loadParallelMetrics(this);
 }
 
 Coordinates::Coordinates(Mesh* mesh, Options* options, const CELL_LOC loc,
@@ -883,6 +886,8 @@ Coordinates::Coordinates(Mesh* mesh, Options* options, const CELL_LOC loc,
                                                   true, true, false, transform.get());
     }
   }
+  // Allow transform to fix things up
+  transform->loadParallelMetrics(this);
 }
 
 void Coordinates::outputVars(Options& output_options) {
