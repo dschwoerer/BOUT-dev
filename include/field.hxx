@@ -200,7 +200,9 @@ inline bool isFci(const F& f) {
 template<typename T>
 inline T emptyFrom(const T& f) {
   static_assert(bout::utils::is_Field<T>::value, "emptyFrom only works on Fields");
-  return T(f.getMesh(), f.getLocation(), {f.getDirectionY(), f.getDirectionZ()}).allocate();
+  return T(f.getMesh(), f.getLocation(), {f.getDirectionY(), f.getDirectionZ()},
+           f.getRegionID())
+      .allocate();
 }
 
 /// Return a field of some type derived from Field, with metadata copied from
@@ -535,17 +537,18 @@ T pow(BoutReal lhs, const T &rhs, const std::string& rgn = "RGN_ALL") {
 #ifdef FIELD_FUNC
 #error This macro has already been defined
 #else
-#define FIELD_FUNC(name, func)                                                       \
-  template<typename T, typename = bout::utils::EnableIfField<T>>                     \
-  inline T name(const T &f, const std::string& rgn = "RGN_ALL") {                    \
-    AUTO_TRACE();                                                                    \
-    /* Check if the input is allocated */                                            \
-    checkData(f);                                                                    \
-    /* Define and allocate the output result */                                      \
-    T result{emptyFrom(f)};                                                          \
-    BOUT_FOR(d, result.getRegion(rgn)) { result[d] = func(f[d]); }                   \
-    checkData(result);                                                               \
-    return result;                                                                   \
+#define FIELD_FUNC(name, func)                                            \
+  template <typename T, typename = bout::utils::EnableIfField<T>>         \
+  inline T name(const T& f, const std::string& rgn = "RGN_ALL") {         \
+    AUTO_TRACE();                                                         \
+    /* Check if the input is allocated */                                 \
+    checkData(f);                                                         \
+    /* Define and allocate the output result */                           \
+    T result{emptyFrom(f)};                                               \
+    BOUT_FOR(d, result.getDefaultRegion(rgn)) { result[d] = func(f[d]); } \
+    result.setRegion(f.getRegionID());                                    \
+    checkData(result);                                                    \
+    return result;                                                        \
   }
 #endif
 

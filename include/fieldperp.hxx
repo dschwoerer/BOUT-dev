@@ -55,10 +55,11 @@ class FieldPerp : public Field {
   /*!
    * Constructor
    */
-  FieldPerp(Mesh * fieldmesh = nullptr, CELL_LOC location_in=CELL_CENTRE,
-            int yindex_in=-1,
-            DirectionTypes directions_in =
-              {YDirectionType::Standard, ZDirectionType::Standard});
+  FieldPerp(Mesh* fieldmesh = nullptr, CELL_LOC location_in = CELL_CENTRE,
+            int yindex_in = -1,
+            DirectionTypes directions_in = {YDirectionType::Standard,
+                                            ZDirectionType::Standard},
+            int regionID = -1);
 
   /*!
    * Copy constructor. After this the data

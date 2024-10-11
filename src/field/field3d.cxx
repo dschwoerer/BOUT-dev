@@ -48,9 +48,9 @@
 #include <bout/assert.hxx>
 
 /// Constructor
-Field3D::Field3D(Mesh* localmesh, CELL_LOC location_in,
-                 DirectionTypes directions_in)
-    : Field(localmesh, location_in, directions_in) {
+Field3D::Field3D(Mesh* localmesh, CELL_LOC location_in, DirectionTypes directions_in,
+                 int _regionID)
+    : Field(localmesh, location_in, directions_in), regionID(_regionID) {
   setName(this, "<F3D>");
 
   if (fieldmesh) {

@@ -168,9 +168,10 @@ class Field3D : public Field {
    * Note: the global "mesh" can't be passed here because
    * fields may be created before the mesh is.
    */
-  Field3D(Mesh *localmesh = nullptr, CELL_LOC location_in=CELL_CENTRE,
-          DirectionTypes directions_in =
-            {YDirectionType::Standard, ZDirectionType::Standard});
+  Field3D(Mesh* localmesh = nullptr, CELL_LOC location_in = CELL_CENTRE,
+          DirectionTypes directions_in = {YDirectionType::Standard,
+                                          ZDirectionType::Standard},
+          int regionID = -1);
 
   /*!
    * Copy constructor
@@ -259,6 +260,12 @@ class Field3D : public Field {
 #else
     return !yup_fields.empty();
 #endif
+  }
+
+  size_t numberParallelSlices() const {
+    // for checks
+    hasParallelSlices();
+    return yup_fields.size();
   }
 
   /// Check if this field has yup and ydown fields

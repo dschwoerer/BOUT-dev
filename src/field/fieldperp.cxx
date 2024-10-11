@@ -34,10 +34,9 @@
 #include <boutexception.hxx>
 #include <msg_stack.hxx>
 
-FieldPerp::FieldPerp(Mesh *localmesh, CELL_LOC location_in, int yindex_in,
-      DirectionTypes directions)
-    : Field(localmesh, location_in, directions),
-      yindex(yindex_in) {
+FieldPerp::FieldPerp(Mesh* localmesh, CELL_LOC location_in, int yindex_in,
+                     DirectionTypes directions, int UNUSED(regionID))
+    : Field(localmesh, location_in, directions), yindex(yindex_in) {
   if (fieldmesh) {
     nx = fieldmesh->LocalNx;
     nz = fieldmesh->LocalNz;
