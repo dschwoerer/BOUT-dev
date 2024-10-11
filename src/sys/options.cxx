@@ -294,7 +294,8 @@ void saveParallel(Options& opt, const std::string name, const Field3D& tosave){
   //ASSERT2(tosave.hasParallelSlices());
   ASSERT0(tosave.isAllocated());
   opt[name] = tosave;
-  for (size_t i0=1 ;  i0 <= tosave.numberParallelSlices(); ++i0) {
+  const int numberParallelSlices = tosave.hasParallelSlices() ? tosave.getMesh()->ystart : 0;
+  for (size_t i0=1 ;  i0 <= numberParallelSlices; ++i0) {
     for (int i: {i0, -i0} ) {
       Field3D tmp;
       tmp.allocate();
