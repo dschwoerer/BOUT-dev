@@ -471,6 +471,7 @@ class Field3D : public Field {
   friend class Vector2D;
 
   Field3D& calcParallelSlices();
+  bool allowCalcParallelSlices{true};
 
   void applyBoundary(bool init=false) override;
   void applyBoundary(BoutReal t);
