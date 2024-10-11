@@ -77,6 +77,11 @@ public:
     return directions.z;
   }
 
+  virtual void setRegion(int UNUSED(regionID)) {}
+  virtual void setRegion(const std::string& UNUSED(region_name)) {}
+  virtual void resetRegion() {}
+  virtual int getRegionID() const { return -1; }
+
   /// Setters for *DirectionType
   virtual Field& setDirections(DirectionTypes directions_in) {
     directions = directions_in;
